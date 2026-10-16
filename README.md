@@ -12,6 +12,8 @@ must-have / nice-to-have / differentiator, and builds an offline study platform 
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+**Pairs with →** [`cn-job-radar`](https://github.com/WEIWEI0614/cn-job-radar) — tracks companies' own ATS career portals (Feishu Hire / Moka / Beisen) and produces the JD pile this tool consumes.
+
 </div>
 
 ---
@@ -180,6 +182,23 @@ Thresholds are calibrated for a **mixed** posting pool. If you scan robotics eng
 plus investment roles together, no single skill will hit 80% — the roles are too different.
 25% is what actually separates the tickets from the rest in practice. Change `Atlas.MUST`
 in `core.py` if your pool is homogeneous.
+
+---
+
+## Pairs with
+
+This tool fetches nothing on its own. It needs a pile of JDs — and there's a purpose-built tool for producing one.
+
+**[cn-job-radar](https://github.com/WEIWEI0614/cn-job-radar)** watches companies' own ATS career portals (Feishu Hire / Moka / Beisen), scores every opening against your profile, and writes `reports/*.json` — which is exactly the input format `atlas analyze` expects.
+
+| | **[cn-job-radar](https://github.com/WEIWEI0614/cn-job-radar)** | **jd-skill-atlas** |
+|---|---|---|
+| Question it answers | What openings exist right now? | What do I need to learn to get them? |
+| Core asset | Company watchlist + portal config | Skill dictionary (93 skills, three layers each) |
+| Output | Scored daily report | Capability map + offline study platform |
+| Hand-off | `reports/*.json` → | → `atlas analyze reports/` |
+
+You can point this tool at any JD source — a folder of saved postings, a scraped JSON, or the hand-written sample in `examples/`. But the two are designed to fit together.
 
 ---
 

@@ -12,6 +12,8 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+**配套使用 →** [`cn-job-radar`](https://github.com/WEIWEI0614/cn-job-radar) —— 盯企业官方招聘门户（飞书招聘 / Moka / 北森）自动抓岗位，产出本工具需要的那堆 JD。
+
 </div>
 
 ---
@@ -179,6 +181,23 @@ atlas path --jd <目录>          # 按前置依赖排序的学习路径
 不会有任何技能覆盖到 80% —— 岗位差异太大了。
 实测下来 25% 才是真正区分「入场券」和「其他」的分水岭。
 如果你的池子是同质的（比如只看算法岗），可以改 `core.py` 里的 `Atlas.MUST`。
+
+---
+
+## 配套使用
+
+本工具自己不抓任何数据。它需要一堆 JD —— 而恰好有一件专门用来产出这些 JD 的工具。
+
+**[cn-job-radar](https://github.com/WEIWEI0614/cn-job-radar)** 盯企业官方招聘门户（飞书招聘 / Moka / 北森），按你的画像给每个岗位打分，写出 `reports/*.json` —— 这正是 `atlas analyze` 期望的输入格式。
+
+| | **[cn-job-radar](https://github.com/WEIWEI0614/cn-job-radar)** | **jd-skill-atlas** |
+|---|---|---|
+| 回答什么问题 | 现在有哪些岗位？ | 我该学什么才能拿到它们？ |
+| 核心资产 | 公司池 + 门户配置 | 技能词典（93 条，每条三层解释） |
+| 产出 | 每日打分日报 | 能力图谱 + 离线学习平台 |
+| 衔接方式 | `reports/*.json` → | → `atlas analyze reports/` |
+
+你也可以把任何来源的 JD 喂给它 —— 一个存着招聘帖的文件夹、抓下来的 JSON、或 `examples/` 里手写的样例。但这两个工具是设计成配套的。
 
 ---
 
