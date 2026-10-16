@@ -226,7 +226,7 @@ skills:
 
     常见坑：没有六维力传感器就只能靠电流估算，精度差；
     接触瞬间的冲击容易让控制器发散，需要专门的过渡策略。
-  prerequisite: [dynamics, sensor]
+  prerequisite: [dynamics, sensor-principles]
   learn_path:
     - 先搞清楚阻抗 vs 导纳的区别，以及各自适用场景
     - 读《Robot Force Control》入门章节
@@ -257,7 +257,7 @@ skills:
 
     非线性 MPC（NMPC）效果好但计算量大，
     实际工程常做线性化或分段线性近似。
-  prerequisite: [dynamics, optimization, optimal-control]
+  prerequisite: [dynamics, optimization, control-theory]
   learn_path:
     - 补最优化基础：凸优化、二次规划（QP）
     - 读 Rawlings 的《Model Predictive Control》或石川的入门讲义
@@ -381,7 +381,7 @@ skills:
 
     常见坑：高维空间（7 自由度机械臂）采样效率暴跌；
     动态障碍物需要重规划（replanning）能力。
-  prerequisite: [algorithms, kinematics]
+  prerequisite: [programming-basics, kinematics]
   learn_path:
     - 学 A* 和 RRT，自己实现一遍（比调库收获大）
     - 读《Planning Algorithms》（LaValle）相关章节
@@ -413,7 +413,7 @@ skills:
 
     常见坑：耐用性 —— 传感器要经得起几万次抓取；
     布线复杂，多指手的走线是工程噩梦。
-  prerequisite: [sensor, signal-processing]
+  prerequisite: [sensor-principles, signal-processing]
   learn_path:
     - 了解三类触觉传感器原理与优劣
     - 读 GelSight 系列论文，看视触觉能做到什么程度
@@ -476,7 +476,7 @@ skills:
     vs 准直驱（力控好、适合足式）。
 
     常见坑：散热。关节长时间工作会过热降额，这是实机上很头疼的问题。
-  prerequisite: [mechanics, electronics]
+  prerequisite: [algorithms-mechanics, electronics]
   learn_path:
     - 了解三类减速器的原理与适用场景
     - 学电机控制基础：FOC、电流环/速度环/位置环

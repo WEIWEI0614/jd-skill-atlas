@@ -1,0 +1,613 @@
+# ============================================================================
+#  技能词典 · 工程栈（硬件 / 基础设施 / 编程 / 制造工艺）
+#  ---------------------------------------------------------------------------
+#  这一批词是从真实 JD 的「词典缺口」里捞出来的 —— 即高频出现但词典没收录、
+#  导致分析结果里看不到的技术词。收录后它们才会进入能力图谱。
+#
+#  注意别名写法：**纯英文别名会自动加词边界**，所以像 Go 这种既是语言又是
+#  英文常用词的，绝不能写裸 "Go"（会命中 "go to"）。用 "Golang" / "Go语言"。
+# ============================================================================
+
+label: 工程栈 · 硬件 / 基础设施 / 编程
+
+skills:
+
+# ---------------------------------------------------------------- 硬件与总线
+
+- id: imu
+  name: IMU
+  zh: 惯性测量单元
+  full_name: Inertial Measurement Unit
+  domain: robotics
+  level: 进阶
+  aliases: [IMU, 惯性测量单元, 惯性单元, 陀螺仪, 加速度计, 组合导航]
+  what: 由陀螺仪 + 加速度计（常加磁力计）组成的姿态传感器 —— 机器人「感知自己怎么动」的核心器件。
+  why: |
+    任何会动的机器人都需要 IMU：双足要保持平衡、机械臂要知道自己姿态、
+    无人机要稳定悬停。JD 里出现 IMU，说明这个岗位要跟**真实硬件**打交道，
+    而不是只在仿真的理想环境里跑算法。
+  how: |
+    该学到什么程度（按岗位分）：
+    - **算法岗**：理解 IMU 的 6 轴数据如何做姿态解算（互补滤波 / Mahony / Madgwick / 卡尔曼滤波），
+      知道零偏、温漂、尺度因子误差怎么标定；
+    - **系统岗**：知道 IMU 与轮式里程计、视觉、激光雷达怎么做**多传感器融合**（通常用 EKF 或 ESKF）；
+    - **采购/产品岗**：认识主流器件（Bosch BMI088、InvenSense ICM 系列、Xsens 工业级），
+      知道消费级和工业级差在哪、价格量级差多少。
+
+    常见坑：
+    1. 直接用未经标定的原始数据 —— 积分几步就漂到天上去；
+    2. 在仿真里调好的参数换到真机就废 —— 因为仿真没有噪声和延迟；
+    3. 忘记 IMU 和相机之间的**时延与外参标定**，融合后反而更差。
+  prerequisite: [python, motion-control]
+  learn_path:
+    - 搞懂欧拉角 / 四元数 / 旋转矩阵的互相转换（这是所有姿态问题的基础）
+    - 用现成 IMU 采一遍数据，手写互补滤波看姿态解算效果
+    - 学卡尔曼滤波（先 1D，再扩展到 ESKF）
+    - 做一次 IMU + 轮速计的融合定位小项目
+  jd_phrases: [IMU, 惯性测量单元, 姿态解算, 多传感器融合, 标定]
+  tags: [硬件, 传感器]
+
+- id: fieldbus
+  name: CAN / EtherCAT
+  zh: 工业总线协议
+  full_name: Fieldbus (CAN / EtherCAT / CANopen)
+  domain: robotics
+  level: 进阶
+  aliases: [CAN, CANopen, EtherCAT, 总线, 现场总线, Modbus, RS485, 实时以太网]
+  what: 机器人和产线上各部件互相通信的「神经系统」—— 控制器、驱动器、传感器通过它传递指令与状态。
+  why: |
+    这是硬件岗和运控岗的分水岭。会算法但不懂总线，就没法把算法真正接到电机上。
+    JD 里出现 CAN 或 EtherCAT，基本意味着岗位要碰**实机联调**，而不是纯软件。
+  how: |
+    三个层次：
+    - **CAN / CANopen**：汽车和中小型机器人的主流。学报文格式、波特率、ID 仲裁、
+      PDO/SDO 对象字典。成本低，但带宽有限（1 Mbps 是常见上限）。
+    - **EtherCAT**：工业机器人和高端产线的主流。基于以太网的实时总线，
+      微秒级同步，几十个从站可以跑在同一条线上。学主站/从站结构、分布式时钟、
+      PDO 映射。
+    - **上位机调试**：会用 candump / cansend、Wireshark 抓包、厂商上位机
+      （如汇川、雷赛、TwinCAT）定位通信故障。
+
+    常见坑：报错第一反应是改代码，其实 90% 的问题在**接线、终端电阻、地线**上。
+    CAN 总线两端必须各有一个 120Ω 终端电阻，缺一个就开始偶发丢包。
+  prerequisite: []
+  learn_path:
+    - 弄清 CAN 与 EtherCAT 的本质区别（为什么后者能实时）
+    - 用一块 CAN 转 USB 卡 + 一个驱动器，亲手发一条报文让电机转起来
+    - 用 Wireshark 抓一次真实总线流量，读懂每一帧
+    - 学一个工业主站软件（TwinCAT 或厂商上位机）的配置流程
+  jd_phrases: [CAN, EtherCAT, 总线通信, 实时通信, 通信协议]
+  tags: [硬件, 通信]
+
+- id: embedded
+  name: 嵌入式
+  zh: 嵌入式系统 / 固件
+  full_name: Embedded Systems & Firmware
+  domain: robotics
+  level: 高级
+  aliases: [嵌入式, 固件, MCU, STM32, 单片机, 实时操作系统, RTOS, FreeRTOS, DSP, 底层驱动]
+  what: 跑在机器人「小电脑」上的程序 —— 直接控制电机、读传感器、做硬实时的环路。
+  why: |
+    运控算法的**最终归宿**是嵌入式。同样的控制律，跑在 Linux 上延迟几毫秒，
+    跑在 RTOS 上可以压到几十微秒 —— 而机器人稳定控制恰恰吃这个量级。
+  how: |
+    分层理解：
+    - **应用层**：C/C++ 写控制逻辑，知道中断、定时器、DMA 怎么用；
+    - **系统层**：RTOS（FreeRTOS / RT-Thread）的任务调度与优先级设计，
+      理解"实时"不是"快"而是"确定性"；
+    - **驱动层**：写电机驱动器、IMU、编码器的通信驱动（SPI/I2C/UART/CAN）。
+
+    常见坑：在实时任务里做 malloc 和 printf —— 内存分配和串口输出都可能阻塞，
+    直接把控制周期拖崩。实时任务里要预分配内存、用环形缓冲。
+  prerequisite: [cpp, fieldbus]
+  learn_path:
+    - C 语言扎实到能读指针和位运算
+    - 拿一块 STM32 开发板，点灯 → 串口 → 定时器中断 → PWM 驱动电机
+    - 学 FreeRTOS 的任务、队列、信号量，做一个多任务小系统
+    - 把一条 PID 控制环路跑通，并用示波器量真实延迟
+  jd_phrases: [嵌入式开发, 固件, MCU, RTOS, 底层驱动]
+  tags: [硬件, 编程]
+
+- id: mech-design
+  name: 结构设计
+  zh: 机械结构 / 机构设计
+  full_name: Mechanical & Structural Design
+  domain: robotics
+  level: 高级
+  aliases: [结构设计, 机械设计, 机构设计, 传动设计, 减速器, 谐波减速, 结构工程师, CAD, 有限元]
+  what: 把纸上的机器人变成能加工出来的实体 —— 关节怎么布置、刚度够不够、散热行不行。
+  why: |
+    人形机器人最难的往往不是算法而是**工程实现**：同样的运控算法，
+    结构刚度差一点、惯量算错一点，走起来就是晃的。
+  how: |
+    - **设计**：SolidWorks / Creo 建模，懂公差配合、材料选型（铝合金 / 碳纤维 / 工程塑料）；
+    - **传动**：谐波减速器、行星减速器、丝杠、同步带各自的场景与背隙特性；
+    - **校核**：有限元分析（ANSYS / Abaqus）算强度刚度，模态分析避开共振；
+    - **可制造性**：知道 CNC、压铸、3D 打印各自能做什么形状、成本差多少。
+
+    常见坑：设计时只算静态强度，忽略了**动态惯量和共振** ——
+    整机跑起来才发现某个频率下抖得厉害。
+  prerequisite: []
+  learn_path:
+    - 学好理论力学 + 材料力学（这两门是地基，不能跳）
+    - 用 CAD 完整设计一个二自由度机械臂并出图
+    - 学一次有限元分析，做静力和模态两个算例
+    - 做一台能动的实物（哪怕是 3D 打印的小车）
+  jd_phrases: [结构设计, 机械设计, 传动, 减速器, 刚度]
+  tags: [硬件, 设计]
+
+# ---------------------------------------------------------------- AI 基础设施
+
+- id: ai-infra
+  name: AI Infra
+  zh: AI 基础设施
+  full_name: AI Infrastructure
+  domain: ai
+  level: 高级
+  aliases: [AI Infra, AI基础设施, 训练框架, 推理引擎, 算力调度, 集群, 模型服务, 大规模训练]
+  what: 让大规模模型能训得起来、跑得起来、serving 成本压得下来的那套工程体系。
+  why: |
+    这是当前最缺人、也最能拉开差距的方向。算法红利在消退，
+    但**把模型跑快、跑便宜**的工程红利才刚开始。
+    JD 里出现 AI Infra，通常意味着薪资与稀缺度都在算法岗之上。
+  how: |
+    四大块：
+    - **训练侧**：数据并行 / 张量并行 / 流水线并行的取舍，ZeRO、FSDP、
+      混合精度、梯度累积，以及通信开销怎么成为瓶颈；
+    - **推理侧**：连续批处理（continuous batching）、PagedAttention、
+      投机解码、量化（INT8/FP8/AWQ/GPTQ）、算子融合；
+    - **调度**：GPU 资源池化（K8s + 设备插件）、抢占与排队、多租户隔离；
+    - **可观测**：显存占用、MFU（模型算力利用率）、首 token 延迟 vs 吞吐的取舍。
+
+    常见坑：只盯吞吐不看延迟，或者反过来 —— 这两个指标在生产里是**互相拉扯**的，
+    必须按业务场景定 SLO 再调。
+  prerequisite: [python, pytorch, cuda, linux]
+  learn_path:
+    - 先把单卡训练和推理跑顺，理解显存都花在哪了
+    - 学分布式：从 DDP 开始，再到 FSDP / ZeRO
+    - 读 vLLM 论文和源码（PagedAttention 是必读）
+    - 亲手把一个模型的首 token 延迟压下去，记录每一步的效果
+  jd_phrases: [AI Infra, 训练框架, 推理引擎, 算力调度, 大规模训练]
+  tags: [基础设施, 高薪方向]
+
+- id: rdma
+  name: RDMA
+  zh: RDMA / 高速网络
+  full_name: Remote Direct Memory Access (InfiniBand / RoCE)
+  domain: ai
+  level: 专家
+  aliases: [RDMA, RoCE, InfiniBand, IB网络, 高速网络, 无损网络, NCCL]
+  what: 让一台机器的显存能直接读写另一台机器的显存，绕开 CPU 和操作系统内核 —— 分布式训练的血管。
+  why: |
+    千卡以上训练时，**通信往往比计算更慢**。不会 RDMA 调优，
+    加卡不一定变快，甚至更慢。这是 AI Infra 岗位里最硬的技能之一。
+  how: |
+    - **原理**：零拷贝、内核旁路（kernel bypass）、单边操作（READ/WRITE）；
+    - **两种路线**：InfiniBand（专用网络，贵、性能最好）vs RoCE（跑在以太网上，便宜、要调 PFC/ECN 做无损）；
+    - **集合通信**：NCCL 的 AllReduce / AllGather / ReduceScatter，Ring vs Tree 算法，
+      以及"为什么带宽翻倍但速度没翻倍"（答：comm/compute overlap 没做好）；
+    - **排障**：`ibstat`、`perfquery`、NCCL_DEBUG 日志，区分是网络问题还是算法问题。
+
+    常见坑：只测了单机带宽就以为万事大吉 —— 真实瓶颈常在**拓扑**上
+    （跨 spine 交换机和同 leaf 下，性能差一倍以上）。
+  prerequisite: [ai-infra, linux]
+  learn_path:
+    - 理解 AllReduce，能手推 Ring AllReduce 的通信量
+    - 读 NCCL 官方文档，跑一次带宽测试（all_reduce_perf）
+    - 学 RoCE 的无损配置：PFC、ECN、DCQCN 各自解决什么问题
+    - 分析一次真实的 NCCL 慢日志，找出瓶颈在哪一层
+  jd_phrases: [RDMA, RoCE, InfiniBand, NCCL, 集合通信]
+  tags: [基础设施, 稀缺]
+
+- id: inference-framework
+  name: SGLang / vLLM
+  zh: 推理服务框架
+  full_name: LLM Serving Framework (SGLang / vLLM / TensorRT-LLM)
+  domain: ai
+  level: 高级
+  aliases: [SGLang, vLLM, TensorRT-LLM, TGI, 推理框架, 模型部署, 高并发推理]
+  what: 把训练好的大模型变成能扛住线上流量的推理服务的那层框架。
+  why: |
+    模型再强，服务端跑不动就是零。这类框架把 PagedAttention、
+    连续批处理、前缀缓存都封装好了，但**怎么配、怎么调**仍然很吃经验。
+  how: |
+    - **vLLM**：社区最主流，PagedAttention 的原创实现，生态最全；
+    - **SGLang**：主打 RadixAttention（前缀共享），在 Agent / 多轮对话场景优势明显；
+    - **TensorRT-LLM**：NVIDIA 官方，性能上限高但生态封闭、适配成本高。
+
+    该掌握：怎么根据显存和 SLO 算最大并发、KV Cache 怎么占显存、
+    前缀缓存什么时候有效、什么时候该上量化。
+
+    常见坑：直接开最大并发 —— 长请求会把显存吃光，
+    短请求全被卡住。要按请求长度做**分桶调度**。
+  prerequisite: [llm, pytorch, cuda]
+  learn_path:
+    - 用 vLLM 把一个开源模型跑起来，压测出吞吐-延迟曲线
+    - 对比开启/关闭前缀缓存的效果，理解收益来自哪里
+    - 学 KV Cache 的显存计算（这是所有调优的基础公式）
+    - 试一次量化部署，比较精度损失和速度收益
+  jd_phrases: [vLLM, SGLang, 推理框架, 模型部署, 高并发]
+  tags: [基础设施, 落地]
+
+- id: agent-framework
+  name: Agent 框架
+  zh: Agent 编排框架
+  full_name: Agent Orchestration (LangGraph / LangChain)
+  domain: ai
+  level: 进阶
+  aliases: [LangGraph, LangChain, LangSmith, LlamaIndex, AutoGen, CrewAI, 编排框架, 工作流编排]
+  what: 把「大模型 + 工具 + 记忆 + 多步流程」串成一个能自己跑下去的应用的那套脚手架。
+  why: |
+    JD 里出现 Agent 的岗位，通常会同时要求会某个编排框架 ——
+    因为从"能对话"到"能干活"，中间隔的就是编排。
+  how: |
+    - **LangChain**：生态最大、抽象最多，原型开发快，但抽象层厚、
+      调试痛苦，复杂流程容易失控；
+    - **LangGraph**：把流程显式建成图（节点 = 步骤，边 = 转移），
+      支持循环、分支、人工介入、状态持久化 —— 生产环境更推荐；
+    - **关键能力**：工具调用（function calling）的 schema 设计、
+      多步任务的错误恢复、上下文管理与裁剪、以及**如何评测 Agent 效果**。
+
+    常见坑：一上来就上多 Agent 协作 —— 复杂度指数上升但效果常常不如
+    一个设计良好的单 Agent + 清晰的工具集。
+  prerequisite: [llm, python, prompt-engineering]
+  learn_path:
+    - 先手写一个不带框架的 ReAct 循环，理解底层在做什么
+    - 用 LangGraph 把同一个任务重写成图，体会状态管理的价值
+    - 设计一套工具集，处理工具调用失败与重试
+    - 建立评测集：同一任务跑 20 次，看成功率而不是看单次效果
+  jd_phrases: [LangChain, LangGraph, Agent开发, 工作流编排, 工具调用]
+  tags: [应用, 框架]
+
+- id: comfyui
+  name: ComfyUI
+  zh: ComfyUI 工作流
+  full_name: ComfyUI / Diffusion Workflow
+  domain: ai
+  level: 进阶
+  aliases: [ComfyUI, WebUI, Stable Diffusion, SDXL, 工作流搭建, 节点式工作流]
+  what: 用节点图的方式搭生成式图像/视频流水线 —— 每一环（模型、采样器、控制网）都是一个可替换的节点。
+  why: |
+    AIGC 岗位的高频要求。它代表的不只是会用一个软件，
+    而是**理解扩散模型的每个组件在干什么**（不然搭不出可控的流水线）。
+  how: |
+    该掌握：模型加载与 LoRA 叠加、采样器与步数的取舍、ControlNet 做构图控制、
+    图生图与局部重绘（inpainting）、以及把工作流导出成 API 供后端调用。
+
+    进阶：理解 CFG scale 的作用、种子复现、显存优化（分块解码、模型卸载）。
+
+    常见坑：把所有节点都拉到最高画质 —— 生成一张要几分钟，
+    而实际业务里 80% 的图用低步数就够了，只有终稿才值得跑满。
+  prerequisite: [python]
+  learn_path:
+    - 跑通一个官方示例工作流，搞清每个节点输入输出
+    - 逐组件的做消融：去掉 ControlNet 看构图怎么变，调 CFG 看色彩怎么变
+    - 用 LoRA 做一次风格定制
+    - 把工作流封装成 API，接到自己的程序里
+  jd_phrases: [ComfyUI, Stable Diffusion, 工作流, AIGC]
+  tags: [应用, AIGC]
+
+- id: benchmark
+  name: 模型评测
+  zh: 模型评测 / Benchmark
+  full_name: Model Evaluation & Benchmarking
+  domain: ai
+  level: 进阶
+  aliases: [Benchmark, 评测, 模型评估, 评估集, 榜单, 消融实验, A/B测试, 标注一致性]
+  what: 用可复现的方式回答"这个模型/这个改动到底有没有变好"。
+  why: |
+    没有评测就没有迭代。这恰恰是多数团队最薄弱、也最需要人的环节 ——
+    很多人会训练，但很少有人能设计出**真正有区分度**的评测集。
+  how: |
+    - **基准测试**：MMLU / GSM8K / HumanEval 这类公开榜单能横向比，
+      但**不能替代自己的业务评测集**（榜单会被过拟合）；
+    - **自建评测集**：从真实业务里采样，标注标准答案，
+      关键是覆盖**难例和边界情况**，而不是堆数量；
+    - **评估方法**：人工评分（贵但准）、模型评分（便宜但有偏）、
+      规则匹配（廉价但窄），通常三者组合；
+    - **统计意识**：样本量太小的时候，分数差异可能是噪声 —— 要算置信区间。
+
+    常见坑：评测集和训练数据重叠，分数虚高却线上翻车。
+  prerequisite: [data-analysis, python]
+  learn_path:
+    - 跑一次公开榜单，理解每个指标衡量什么
+    - 从业务日志里抽 200 条，做一个自己的评测集
+    - 设计评分标准，测一次标注一致性（多人标同一批看分歧）
+    - 做 A/B 对比：两个版本各跑一遍，判断差异是否显著
+  jd_phrases: [评测, Benchmark, 模型评估, 消融实验, 效果评估]
+  tags: [方法, 质量]
+
+# ---------------------------------------------------------------- 编程与工程
+
+- id: go
+  name: Go
+  zh: Go 语言
+  full_name: Go / Golang
+  domain: data
+  level: 进阶
+  aliases: [Golang, Go语言, Go 语言, gin, go-zero]
+  what: 为并发和云原生而生的编译型语言 —— 部署简单（单二进制）、并发模型清晰。
+  why: |
+    后端基础设施、Agent 服务、云原生组件的常用语言。
+    JD 里出现 Go，通常意味着岗位要做**服务端或基础设施**，而不是算法。
+  how: |
+    - **语法**：极简，一天能上手；但接口设计和错误处理方式与 Python 差别很大；
+    - **并发**：goroutine + channel 是核心，理解 CSP 模型、
+      学会用 context 做超时与取消；
+    - **工程**：模块管理（go mod）、依赖注入、测试与 benchmark、
+      pprof 做性能分析。
+
+    常见坑：goroutine 泄漏（起了不回收）、在 channel 上死锁 ——
+    这两个是生产事故的高频来源。
+  prerequisite: [linux]
+  learn_path:
+    - 语法速通，重点写接口和错误处理
+    - 写一个并发爬虫，理解 goroutine 与 channel
+    - 学 context 做超时控制和优雅退出
+    - 用 pprof 分析一个慢接口
+  jd_phrases: [Go, Golang, 后端开发, 服务端]
+  tags: [编程]
+
+- id: java
+  name: Java
+  zh: Java
+  full_name: Java
+  domain: data
+  level: 进阶
+  aliases: [Java, Spring Boot, SpringBoot, JVM, 微服务]
+  what: 企业级后端的主力语言 —— 生态成熟、招聘量大、金融和传统行业尤其依赖。
+  why: |
+    如果你的目标是**产业岗里的平台/中台方向**而不是算法方向，
+    Java 是绕不过的。许多 AI 公司的大模型应用后端也是 Java 栈。
+  how: |
+    重点不在语法（比 Python 啰嗦但也不难），而在生态：
+    Spring Boot 做服务、MyBatis 做持久化、JVM 调优、
+    微服务拆分与治理（注册中心、网关、限流熔断）。
+
+    常见坑：只学语法不学 Spring 生态 —— 面试问的全是生态。
+  prerequisite: []
+  learn_path:
+    - 语法 + 集合框架 + 并发基础
+    - Spring Boot 写一个带数据库的 CRUD 服务
+    - 学 JVM 内存模型与 GC（面试必问）
+    - 了解微服务治理的基本组件
+  jd_phrases: [Java, Spring Boot, 后端, 微服务]
+  tags: [编程]
+
+- id: rust
+  name: Rust
+  zh: Rust
+  full_name: Rust
+  domain: data
+  level: 高级
+  aliases: [Rust, cargo]
+  what: 用编译期检查保证内存安全的系统级语言 —— 性能接近 C++，但没有悬垂指针和数据竞争。
+  why: |
+    机器人底层、高性能推理、基础设施的**新宠**。
+    JD 里出现 Rust 往往是加分项，但它也常常暗示团队技术审美偏高。
+  how: |
+    - **核心难点**：所有权（ownership）、借用（borrowing）、生命周期 —— 这三关过了就入门了；
+    - **并发**：Send/Sync trait，编译器帮你排除数据竞争，这是它最大的卖点；
+    - **生态**：cargo 是所有语言里最好用的包管理器之一；
+      异步用 tokio，与 Python 互操作用 pyo3。
+
+    常见坑：跟编译器"搏斗"时本能地到处 clone 和上 Rc/RefCell ——
+    能编译但丢掉了 Rust 的性能优势。要先想清楚数据的所有权归属。
+  prerequisite: [linux]
+  learn_path:
+    - 通读官方 The Book，重点吃透所有权三章
+    - 用 Rust 重写一个 Python 小工具，感受编译期检查
+    - 学 tokio 写一个异步网络服务
+    - 用 pyo3 写一个 Python 扩展模块
+  jd_phrases: [Rust, 系统编程, 高性能]
+  tags: [编程, 加分]
+
+- id: typescript
+  name: TypeScript
+  zh: TypeScript
+  full_name: TypeScript
+  domain: data
+  level: 进阶
+  aliases: [TypeScript, TS, Node.js, NodeJS, React, Next.js, 前端]
+  what: 给 JavaScript 加上类型系统的超集 —— 前端和全栈开发的事实标准。
+  why: |
+    AI 应用的产品化离不开前端。做 AI 产品的公司，
+    前端/全栈岗大量存在，而且**离用户最近、话语权不小**。
+  how: |
+    - **类型系统**：泛型、联合类型、类型守卫、utility types ——
+      这些是"会 TS"和"会写 JS"的区别；
+    - **工程**：模块解析、构建工具（Vite）、状态管理、SSR（Next.js）；
+    - **AI 场景**：流式输出（SSE / WebSocket）、Markdown 与代码高亮渲染、
+      文件上传与预览。
+
+    常见坑：到处写 `any` —— 等于用 TS 的语法写 JS，类型检查形同虚设。
+  prerequisite: []
+  learn_path:
+    - 语法 + 类型系统基础，理解为什么需要类型
+    - 用 React + TS 写一个可用的界面
+    - 学流式响应，做一个打字机效果的 AI 对话页
+    - 学 Next.js 做一次服务端渲染部署
+  jd_phrases: [TypeScript, 前端, 全栈, React]
+  tags: [编程]
+
+- id: ci-cd
+  name: CI/CD
+  zh: 持续集成 / 持续交付
+  full_name: Continuous Integration & Continuous Delivery
+  domain: data
+  level: 进阶
+  aliases: [CI, CD, CI/CD, 持续集成, 持续交付, Jenkins, GitLab CI, GitHub Actions, 自动化测试]
+  what: 每次提交自动跑测试、打包、部署 —— 让"能不能上线"从人工判断变成流水线判断。
+  why: |
+    这是"个人项目"和"工程团队"之间最明显的分界线。
+    面试官问你有没有 CI，其实是在问：你的代码别人敢不敢用。
+  how: |
+    - **最小可用**：每次 push 自动跑单元测试 + lint，失败就拦住合并；
+    - **进阶**：多环境（dev/staging/prod）、制品版本管理、
+      灰度发布与回滚、密钥管理；
+    - **认知**：CI 的价值不是"省事"，而是**把回归问题在合并前就暴露**，
+      让主干始终可发布。
+
+    常见坑：CI 只用来跑测试，不做制品管理 ——
+    结果"测试通过"和"线上跑的那版"其实不是同一个二进制。
+  prerequisite: [git, docker]
+  learn_path:
+    - 给一个自己的项目加 GitHub Actions，push 即跑测试
+    - 加 lint 和类型检查，体验"卡在门口"的价值
+    - 加构建产物上传，实现一次自动化发布
+    - 学一个更重的工具（GitLab CI 或 Jenkins）的流水线语法
+  jd_phrases: [CI/CD, 持续集成, 自动化构建, 流水线]
+  tags: [工程实践]
+
+- id: devops
+  name: DevOps
+  zh: DevOps / 云原生运维
+  full_name: DevOps & Cloud Native Operations
+  domain: data
+  level: 高级
+  aliases: [DevOps, 云原生, 容器编排, 服务网格, 监控告警, Prometheus, Grafana, 可观测性]
+  what: 让服务能稳定跑在生产环境的那一整套实践 —— 部署、扩缩容、监控、告警、故障定位。
+  why: |
+    AI 产品的成本大头和大坑都在这里：GPU 资源浪费、服务雪崩、
+    训练任务排队排到天荒地老。JD 里出现 DevOps 相关的词，
+    说明这个岗位要为**线上结果**负责。
+  how: |
+    - **容器**：Docker 打包 + Kubernetes 编排（Pod / Deployment / Service / Ingress）；
+    - **配置与发布**：Helm、GitOps、滚动更新与蓝绿部署；
+    - **可观测**：Metrics（Prometheus）+ Logs（Loki/ELK）+ Traces（Jaeger），
+      三者缺一不可 —— 光有监控不看日志，故障时还是瞎；
+    - **SLO/SLI**：定义"多快算正常"，用错误预算驱动发布节奏。
+
+    常见坑：告警配得太勤 —— 团队对告警脱敏，真出事时反而没人看。
+  prerequisite: [docker, linux, ci-cd]
+  learn_path:
+    - Docker 打包自己的应用，理解镜像分层
+    - 学 K8s 核心对象，把应用部署上去
+    - 搭一套 Prometheus + Grafana 监控
+    - 做一次故障演练：手动杀掉一个 Pod，看系统怎么自愈
+  jd_phrases: [DevOps, 云原生, K8s, 监控告警, 可观测性]
+  tags: [工程实践]
+
+- id: middleware
+  name: Redis / 中间件
+  zh: 缓存与消息中间件
+  full_name: Redis / Kafka / Message Queue
+  domain: data
+  level: 进阶
+  aliases: [Redis, Kafka, RabbitMQ, 消息队列, MQ, 缓存, 分布式锁]
+  what: 缓存、消息队列、分布式锁这些"粘合剂"组件 —— 单体架构不需要，上了规模就绕不过。
+  why: |
+    AI 应用一旦真上量就会遇到：同一个问题重复请求要缓存、
+    长任务要异步队列、多实例要协调。这些场景全落在这层。
+  how: |
+    - **Redis**：不只是缓存 —— 还能做分布式锁、限流、排行榜、
+      会话共享。要懂数据结构和过期策略，以及**缓存穿透/击穿/雪崩**的应对；
+    - **Kafka**：高吞吐事件流，适合日志、埋点、异步任务。
+      要懂分区、消费组、offset 与至少一次/恰好一次语义；
+    - **选型判断**：什么时候用 Redis 队列就够了（简单、量小）、
+      什么时候必须上 Kafka（吞吐大、要重放）。
+
+    常见坑：把 Redis 当数据库用 —— 它默认会丢数据
+    （持久化是异步的），关键数据落在它上面迟早出事。
+  prerequisite: [linux]
+  learn_path:
+    - Redis 五种基础数据结构各用一个真实场景练一遍
+    - 手写一个分布式锁，再学 Redlock 的争议在哪
+    - Kafka 生产者消费者跑通，理解分区的意义
+    - 压测一次，找出瓶颈在 Redis 还是在业务代码
+  jd_phrases: [Redis, Kafka, 消息队列, 缓存, 中间件]
+  tags: [工程实践]
+
+- id: ai-coding
+  name: AI 编程工具
+  zh: AI 辅助编程
+  full_name: AI-Assisted Development (Cursor / Claude Code)
+  domain: data
+  level: 入门
+  aliases: [Cursor, Claude Code, GitHub Copilot, Copilot, AI编程, 智能编程助手, 代码补全]
+  what: 把大模型接进开发流程的编程助手 —— 从补全单行代码到按需求改整个仓库。
+  why: |
+    JD 里主动写这个，说明团队**在意开发效率、也接受新工具** ——
+    这本身就是个关于团队文化的信号。它已经从"加分项"变成很多岗位的默认前提。
+  how: |
+    - **三个层次**：补全（Tab 补代码）→ 对话（解释 / 改一段）→ 代理（给需求自动改多文件）；
+    - **用得好 vs 用不好**：
+      - 好的用法：写测试、做重构、读陌生代码库、写样板代码；
+      - 危险的用法：让它在你不理解的领域直接产出 —— 会写出能编译但逻辑错的代码；
+    - **核心技能其实是"提需求"和"审代码"**，而不是敲代码本身。
+
+    常见坑：把它当搜索引擎用，而不是当需要 review 的初级同事 ——
+    它生成的代码你仍然要负责。
+  prerequisite: []
+  learn_path:
+    - 装一个工具，先用补全和对话两种模式各做一次真实任务
+    - 练"给清晰的上下文"：把相关文件、约束、期望输出说清楚
+    - 用它读一个你不熟的开源库，验证理解是否准确
+    - 建立自己的 review 习惯：生成的代码必看 diff
+  jd_phrases: [Cursor, Claude Code, Copilot, AI编程工具, 提效]
+  tags: [工具, 效率]
+
+# ---------------------------------------------------------------- 制造与质量
+
+- id: quality-system
+  name: 质量体系
+  zh: 质量体系与认证
+  full_name: Quality Management System (ISO 9001 / IATF 16949)
+  domain: product
+  level: 进阶
+  # 注意：**不要**把裸「审核」当别名 —— JD 里「代码审核」「需求审核」很常见，
+  #       与质量体系认证无关。
+  aliases: [ISO9001, ISO 9001, IATF16949, IATF 16949, 质量体系, 质量管理, 体系认证, 内审, 客户审核]
+  what: 一套证明"你的产品能稳定地做出来"的管理流程与认证体系。
+  why: |
+    硬件公司一旦要量产、要进车企供应链，就必须有这些认证。
+    JD 里出现它，说明岗位要**对接量产和客户审核**，
+    是产业岗（项目管理 / 质量 / 供应链）的核心要求。
+  how: |
+    - **ISO 9001**：通用质量管理体系，核心是"过程方法 + 持续改进"（PDCA）；
+    - **IATF 16949**：汽车行业专用，比 ISO 9001 严得多，
+      额外要求 APQP、PPAP、MSA、SPC、FMEA 五大工具；
+    - **实际工作**：写体系文件、组织内审、接待客户审核、
+      跟踪不符合项的整改闭环。
+
+    常见坑：把体系当"写文档应付检查" —— 那样做出来的东西在真出质量事故时
+    一点用都没有，客户审核也一问就露。
+  prerequisite: [project-management]
+  learn_path:
+    - 搞懂 ISO 9001 的七项质量管理原则
+    - 学汽车行业五大工具（APQP/PPAP/MSA/SPC/FMEA）各自解决什么
+    - 读一份真实的体系文件，理解它和实际流程怎么对应
+    - 参与一次内审，从检查表开始
+  jd_phrases: [ISO9001, IATF16949, 质量体系, 体系认证]
+  tags: [制造, 质量]
+
+- id: fmea
+  name: FMEA
+  zh: 失效模式与影响分析
+  full_name: Failure Mode and Effects Analysis
+  domain: product
+  level: 进阶
+  # 注意：**不要**把裸「可靠性」当别名 —— 它出现在大量 JD 里描述系统属性，
+  #       与 FMEA 这种具体方法无关（实测会虚增 10 个百分点）。
+  aliases: [FMEA, PFMEA, DFMEA, 失效分析, 失效模式, 风险分析, RPN]
+  what: 系统性地问"这里可能怎么坏、坏了多严重、多容易发生"，然后把资源压在高风险项上。
+  why: |
+    硬件产品的可靠性靠它保证。JD 里出现 FMEA，说明岗位要为
+    **批量生产出的良率负责**，而不是只做原型。
+  how: |
+    - **两种**：DFMEA 管设计（这个结构会不会断），
+      PFMEA 管过程（这道工序会不会做错）；
+    - **打分**：严重度（S）× 发生度（O）× 探测度（D）= RPN，
+      按 RPN 排序决定先改哪个；
+    - **触发条件**：新设计、新工艺、客户投诉、质量事故后都要更新。
+
+    常见坑：把它做成一次性文档 —— FMEA 是**活的**，
+    每次出问题都应该回过头去改它，否则就是形式主义。
+  prerequisite: [quality-system, mech-design]
+  learn_path:
+    - 理解 S/O/D 三个维度分别怎么打分
+    - 拿一个真实产品（哪怕是电饭煲）做一次完整 FMEA
+    - 学 RPN 阈值怎么定，什么分数必须立刻整改
+    - 结合一次真实故障，倒推 FMEA 应该在哪一步拦住它
+  jd_phrases: [FMEA, PFMEA, DFMEA, 失效分析, 可靠性]
+  tags: [制造, 质量]

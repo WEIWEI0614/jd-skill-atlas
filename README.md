@@ -38,7 +38,7 @@ Keyword extractors don't solve this. They give you a word cloud.
                     │                                    │
               matched against a                    every term gets:
               curated skill dictionary              what / why / how
-              (58 skills, 5 domains)                + prerequisites
+              (93 skills, 7 domains)                + prerequisites
                                                     + learning steps
                                                     + real JD evidence
 ```
@@ -104,7 +104,7 @@ jd-skill-atlas does extraction with a **curated dictionary + rules**:
 - **Local** — your job search never leaves your machine
 - **Fast** — 380 JDs in well under a second
 
-The trade-off is honesty about coverage: the dictionary knows 58 skills, not everything.
+The trade-off is honesty about coverage: the dictionary knows 93 skills, not everything.
 That's what the **dictionary-gap list** is for — it tells you exactly which high-frequency
 terms aren't covered yet, so you extend the dictionary instead of guessing. An LLM is
 optional for filling those gaps; it is never on the critical path.
@@ -113,7 +113,7 @@ optional for filling those gaps; it is never on the critical path.
 
 ## The skill dictionary
 
-58 skills across 5 domains, and this is the part worth contributing to.
+93 skills across 7 domains, and this is the part worth contributing to.
 
 | File | Domain | Examples |
 |---|---|---|

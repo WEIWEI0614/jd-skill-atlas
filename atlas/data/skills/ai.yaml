@@ -316,7 +316,8 @@ skills:
   full_name: Embedding
   domain: ai
   level: 入门
-  aliases: [Embedding, 向量化, 词向量, 嵌入, 向量数据库, Vector DB, 语义检索]
+  # 注意：**不要**把裸「嵌入」当别名 —— JD 里「嵌入到现有系统」的用法远多于 embedding。
+  aliases: [Embedding, 向量化, 词向量, 嵌入向量, 向量数据库, Vector DB, 语义检索]
   what: 把文字变成一串数字（向量），意思相近的文字在向量空间里距离也近。
   why: |
     所有检索类应用的基础 —— 搜索、推荐、RAG、去重都靠它。
@@ -414,7 +415,8 @@ skills:
   full_name: Reinforcement Learning from Human Feedback
   domain: ai
   level: 高级
-  aliases: [RLHF, 人类反馈强化学习, DPO, 偏好对齐, 对齐, Alignment]
+  # 注意：**不要**把裸「对齐」当别名 —— JD 里「对齐需求 / 对齐目标」是高频日常用语。
+  aliases: [RLHF, 人类反馈强化学习, DPO, 偏好对齐, 价值观对齐, Alignment]
   what: 用人类的偏好打分来调教模型，让它输出更符合人期待的内容。
   why: |
     决定模型「好不好用」的关键一步。SFT 只教会模型听指令，
@@ -448,7 +450,8 @@ skills:
   full_name: AI Safety & Alignment
   domain: ai
   level: 高级
-  aliases: [AI安全, 对齐, Alignment, AI Safety, 红队, Red Teaming, 越狱, 内容安全, 可信AI]
+  # 同上：裸「对齐」会造成大量误判。
+  aliases: [AI安全, AI 安全, 安全对齐, Alignment, AI Safety, 红队, Red Teaming, 越狱防护, 内容安全, 可信AI]
   what: 保证 AI 系统不做出有害的事 —— 不被诱导说坏话、不泄露隐私、不失控。
   why: |
     监管趋严 + 大模型上线必备环节。

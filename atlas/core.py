@@ -28,6 +28,7 @@ DATA_DIR = HOME / "data"
 
 # 领域显示名
 DOMAIN_LABELS = {
+    "foundations": "基础理论（地基）",
     "ai": "人工智能",
     "robotics": "机器人 / 具身智能",
     "investment": "投资 / 金融",
