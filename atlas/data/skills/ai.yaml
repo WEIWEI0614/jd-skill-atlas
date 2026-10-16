@@ -1,0 +1,476 @@
+# ============================================================================
+#  技能词典 · 人工智能 / 大模型
+#  格式说明见 robotics.yaml 顶部
+# ============================================================================
+
+label: 人工智能 · 大模型
+
+skills:
+
+- id: transformer
+  name: Transformer
+  zh: 变换器架构
+  full_name: Transformer
+  domain: ai
+  level: 进阶
+  aliases: [Transformer, 变换器, 注意力机制, Attention, 自注意力, Self-Attention]
+  what: 当前所有大模型的骨架 —— 靠「注意力机制」让每个词都能直接看到其他所有词。
+  why: |
+    这是绕不过去的底层。VLA、世界模型、多模态，全都建立在它之上。
+    JD 里出现 Transformer，说明岗位在做模型本身，而不是调用 API。
+  how: |
+    核心是自注意力（self-attention）：对每个位置，
+    计算它与其他所有位置的相关性权重，然后加权求和。
+    相比 RNN，它的优势是能并行计算、长距离依赖不衰减。
+
+    关键结构：多头注意力（Multi-Head）+ 残差连接 + LayerNorm + FFN。
+
+    演进脉络要清楚：
+    - 原始 Transformer (2017)：编码器-解码器，为翻译设计
+    - BERT：只用编码器，理解类任务
+    - GPT：只用解码器，生成类任务 ← 当前主流
+    - 各种魔改：稀疏注意力、线性注意力，为了降复杂度
+
+    常见坑：注意力复杂度是 O(n²)，长上下文会爆显存 —— 这就是 KV Cache、
+    FlashAttention 这些优化存在的理由。
+  prerequisite: [deep-learning, linear-algebra]
+  learn_path:
+    - 读《Attention Is All You Need》原文，逐行理解公式
+    - 手写一个最小的 Transformer（nanoGPT 是很好的起点）
+    - 理解为什么要多头、为什么要残差和 LayerNorm
+    - 进阶：FlashAttention、稀疏注意力的动机和取舍
+  jd_phrases: [Transformer, 注意力机制, 大模型架构, LLM]
+  tags: [基础, 必备]
+
+- id: llm
+  name: LLM
+  zh: 大语言模型
+  full_name: Large Language Model
+  domain: ai
+  level: 入门
+  aliases: [LLM, 大模型, 大语言模型, Large Language Model, 基础模型, Foundation Model]
+  what: 在海量文本上训练出来的、参数量巨大的语言模型 —— 能写代码、答问题、做推理。
+  why: |
+    当前 AI 行业的绝对中心。几乎所有 AI 岗位都会提到它，
+    区别在于你是在「训练它」「优化它」还是「用它做应用」。
+  how: |
+    三阶段训练流程要搞清楚：
+    1) 预训练（Pre-training）：海量文本上预测下一个 token，学到世界知识；
+    2) 指令微调（SFT）：用人工标注的问答数据，学会听指令；
+    3) 对齐（RLHF/DPO）：用人类偏好数据，学会「好好说话」。
+
+    规模法则（Scaling Law）是行业信仰：参数、数据、算力同比例增长，能力就会提升。
+    但 2024 年后大家发现数据快用完了，转向「后训练」和「推理时计算」。
+
+    常见坑：幻觉（Hallucination）—— 模型会一本正经地编造事实，
+    这是架构性问题，不可能靠调 prompt 根治。
+  prerequisite: [transformer]
+  learn_path:
+    - 读懂三阶段训练流程各自在干什么
+    - 用 HuggingFace 加载一个开源模型，做一次推理
+    - 了解主流开源模型家族（Llama / Qwen / DeepSeek）的差异
+    - 关注「后训练时代」的新范式：推理模型、长思维链
+  jd_phrases: [LLM, 大模型, 大语言模型, 基础模型, 语言模型]
+  tags: [基础, 必备]
+
+- id: finetuning
+  name: 微调
+  zh: 模型微调
+  full_name: Fine-tuning
+  domain: ai
+  level: 进阶
+  aliases: [微调, Fine-tuning, SFT, 指令微调, LoRA, QLoRA, PEFT, 参数高效微调]
+  what: 拿一个预训练好的大模型，用你自己的数据再训一遍，让它学会你的领域。
+  why: |
+    做 AI 应用最常用的手段。不是每家公司都能从头训大模型，
+    但几乎每家都需要微调来适配自己的业务。
+    这是 AI 应用岗位的核心技能之一。
+  how: |
+    全量微调 vs 参数高效微调（PEFT）：
+    - 全量微调：效果上限高，但要几十张卡，贵；
+    - LoRA：只训练一对低秩矩阵（占原参数 0.1%–1%），单卡就能跑 ← 主流选择；
+    - QLoRA：在 LoRA 基础上把基座量化到 4bit，显存再降一半。
+
+    数据质量比数量重要得多：
+    1000 条精心构造的样本，往往胜过 10 万条爬来的脏数据。
+
+    常见坑：
+    - 灾难性遗忘 —— 微调后模型丢了通用能力，需要混入通用数据；
+    - 过拟合 —— loss 降得很低但泛化差，早停很关键；
+    - 数据泄漏 —— 训练集混进了测试问题。
+  prerequisite: [llm, pytorch]
+  learn_path:
+    - 先跑通一次 LoRA 微调（LLaMA-Factory 等框架上手最快）
+    - 理解 LoRA 的低秩分解原理，知道 rank 怎么选
+    - 学数据构造：怎么把业务问题转成训练样本
+    - 掌握评测：微调后怎么证明「真的变好了」
+  jd_phrases: [微调, Fine-tuning, SFT, LoRA, 指令微调, 模型训练]
+  tags: [核心, 必备]
+
+- id: rag
+  name: RAG
+  zh: 检索增强生成
+  full_name: Retrieval-Augmented Generation
+  domain: ai
+  level: 入门
+  aliases: [RAG, 检索增强生成, Retrieval-Augmented Generation, 知识库问答, 向量检索]
+  what: 让模型回答问题前先去「查资料」，把查到的内容塞进 prompt，再让它回答。
+  why: |
+    解决大模型两大硬伤：知识过时 + 幻觉。
+    这是企业级 AI 应用最主流的落地方式（客服、知识库、法律检索……），
+    岗位需求量极大，门槛相对低。
+  how: |
+    标准流程：文档切分（chunking）→ 向量化（embedding）→ 存入向量库
+    → 用户提问时检索 top-k → 塞进 prompt → 模型基于检索内容回答。
+
+    真正的难点不在流程，在这些地方：
+    - 切分策略：按语义切还是按长度切？表格和图片怎么办？
+    - 检索质量：纯向量检索经常召回不准，实务上要混合「向量 + 关键词（BM25）」
+    - 重排序（rerank）：召回 50 条后用交叉编码器精排出 top-5
+    - 多跳问题：一个问题需要查多处资料，单轮检索搞不定
+
+    常见坑：以为 RAG 就是「向量数据库 + GPT」，
+    结果效果一塌糊涂 —— 通常是切分和检索策略没做对。
+  prerequisite: [llm, embedding]
+  learn_path:
+    - 用 LlamaIndex 或 LangChain 跑通一个最小 RAG
+    - 重点研究切分策略对效果的影响（做 A/B 对比）
+    - 加一层 rerank，亲自感受召回质量的变化
+    - 学评测：怎么量化 RAG 的效果（命中率、忠实度）
+  jd_phrases: [RAG, 检索增强, 知识库, 向量检索, 问答系统]
+  tags: [应用, 入门友好]
+
+- id: agent
+  name: Agent
+  zh: 智能体
+  full_name: AI Agent
+  domain: ai
+  level: 进阶
+  aliases: [Agent, 智能体, AI Agent, 工具调用, Tool Calling, Function Calling, 多智能体]
+  what: 让大模型不只是回答问题，而是能自己规划步骤、调用工具、完成任务。
+  why: |
+    2026 年最热的应用方向。从「聊天机器人」到「能干活的东西」，中间隔的就是 Agent。
+    JD 里出现 Agent，说明岗位在做产品化落地，而不是模型研究。
+  how: |
+    核心循环（ReAct 范式）：思考（Thought）→ 行动（Action）→ 观察（Observation）→ 再思考。
+
+    关键组件：
+    - 工具定义（tool schema）：怎么让模型知道有哪些工具可用；
+    - 记忆（memory）：短期上下文 + 长期向量记忆；
+    - 规划（planning）：把复杂任务拆成可执行步骤；
+    - 错误恢复：调用失败怎么重试、怎么换路径。
+
+    多智能体（Multi-Agent）：让多个 Agent 分工协作
+    （一个写代码、一个审查、一个测试），适合复杂任务。
+
+    常见坑：
+    - 循环失控 —— Agent 反复调用同一个失败的工具，需要步数上限和死循环检测；
+    - 上下文爆炸 —— 工具返回太长会撑爆窗口，需要摘要压缩；
+    - 评测困难 —— 非确定性系统怎么衡量好坏，是个开放问题。
+  prerequisite: [llm, prompt-engineering]
+  learn_path:
+    - 理解 ReAct 循环，手写一个最简单的 Agent（不用框架，收获更大）
+    - 学 function calling 的协议细节
+    - 加记忆和规划，让 Agent 能做多步任务
+    - 研究评测：怎么量化 Agent 的成功率
+  jd_phrases: [Agent, 智能体, 工具调用, Function Calling, 多智能体, 自主规划]
+  tags: [核心, 应用]
+
+- id: moe
+  name: MoE
+  zh: 混合专家
+  full_name: Mixture of Experts
+  domain: ai
+  level: 高级
+  aliases: [MoE, 混合专家, Mixture of Experts, 稀疏激活]
+  what: 模型里有很多「专家」子网络，每次只激活其中几个 —— 参数量巨大但计算量可控。
+  why: |
+    当前大模型扩容的主流架构（DeepSeek、Mixtral 都在用）。
+    招这个岗说明公司在做模型底层，不是应用层。
+  how: |
+    核心是门控网络（gating）：对每个 token，决定把它路由给哪几个专家。
+
+    好处：总参数可以做到几千亿，但每个 token 只算一小部分
+    → 同样的算力下，模型容量大得多。
+
+    三大工程难题：
+    1) 负载均衡 —— 热门专家被挤爆、冷门专家闲着，需要 aux loss 或容量因子来控制；
+    2) 通信开销 —— 专家分布在不同 GPU 上，路由意味着大量跨卡通信；
+    3) 训练不稳定 —— 门控容易塌缩到只用少数几个专家。
+
+    常见坑：以为 MoE 就是「多个小模型拼起来」，忽略了路由和通信才是难点。
+  prerequisite: [transformer, distributed-training]
+  learn_path:
+    - 读 Switch Transformer、Mixtral 论文，理解路由机制
+    - 搞懂负载均衡损失（auxiliary loss）为什么必要
+    - 学专家并行（expert parallelism）的通信模式
+  jd_phrases: [MoE, 混合专家, 稀疏激活, 模型架构]
+  tags: [底层, 高级]
+
+- id: kv-cache
+  name: KV Cache
+  zh: 键值缓存
+  full_name: Key-Value Cache
+  domain: ai
+  level: 高级
+  aliases: [KV Cache, KV缓存, 键值缓存, PagedAttention, 显存优化]
+  what: 生成文本时把算过的中间结果缓存下来，避免重复计算 —— 用显存换速度。
+  why: |
+    推理性能优化的核心。不做 KV Cache，长文本生成会慢到不可用。
+    这类岗位属于 AI Infra，薪资高、人少。
+  how: |
+    原理：自回归生成时，每生成一个新 token 都要「回看」前面所有 token。
+    如果不缓存，每次都要重算 → O(n²) 复杂度。
+    缓存后每次只算新 token → O(n)。
+
+    但代价是显存：KV Cache 大小 = 层数 × 头数 × 序列长度 × 维度 × 精度。
+    长上下文时它能吃掉几十 GB。
+
+    优化方向：
+    - PagedAttention（vLLM 的核心）：像操作系统管理内存分页一样管理 KV Cache，
+      解决碎片化，吞吐提升数倍；
+    - 量化：把 KV Cache 降到 8bit/4bit；
+    - 稀疏化：只保留重要的 token 的 KV。
+
+    常见坑：以为 KV Cache 只是「加个缓存」，
+    实际它是推理框架最核心的设计点，直接决定并发能力和成本。
+  prerequisite: [transformer, llm]
+  learn_path:
+    - 理解自回归生成为什么需要缓存
+    - 读 vLLM 的 PagedAttention 论文
+    - 估算一次：7B 模型 32K 上下文的 KV Cache 占多少显存
+    - 了解 MQA / GQA（减少 KV 头数）的取舍
+  jd_phrases: [KV Cache, 推理优化, 显存优化, vLLM, 高性能推理]
+  tags: [Infra, 高级]
+
+- id: inference-optimization
+  name: 推理优化
+  zh: 推理优化
+  full_name: Inference Optimization
+  domain: ai
+  level: 高级
+  aliases: [推理优化, 推理加速, 模型部署, 量化, Quantization, 蒸馏, 剪枝, TensorRT, vLLM]
+  what: 让训练好的模型跑得更快、更省、能同时服务更多人。
+  why: |
+    AI 落地绕不开成本。同一个模型，优化好坏能让推理成本差 10 倍。
+    这是 AI Infra 岗位的核心能力，供给稀缺、薪资高。
+  how: |
+    四条主线：
+    - 量化（Quantization）：把权重从 FP16 降到 INT8/INT4，显存减半、速度提升，
+      代价是精度轻微下降（GPTQ、AWQ 是主流方案）；
+    - 蒸馏（Distillation）：小模型学大模型的输出，用效果换成本；
+    - 剪枝（Pruning）：删掉不重要的权重；
+    - 算子与调度优化：FlashAttention、算子融合、连续批处理（continuous batching）。
+
+    工程侧的关键选择：vLLM（吞吐优先）vs TensorRT-LLM（延迟优先）
+    vs llama.cpp（CPU/边缘）。
+
+    常见坑：只优化模型不管服务 —— 实际瓶颈常在调度和 KV Cache 管理上。
+  prerequisite: [llm, kv-cache]
+  learn_path:
+    - 先搞懂量化原理和主流方案（GPTQ / AWQ）的差异
+    - 用 vLLM 部署一个模型，测吞吐和延迟
+    - 学连续批处理，理解它为什么比静态 batch 高效
+    - 自己量化一次模型，对比精度损失
+  jd_phrases: [推理优化, 模型部署, 量化, 推理加速, 高性能计算]
+  tags: [Infra, 核心]
+
+- id: distributed-training
+  name: 分布式训练
+  zh: 分布式训练
+  full_name: Distributed Training
+  domain: ai
+  level: 高级
+  aliases: [分布式训练, 并行训练, 数据并行, 模型并行, 张量并行, 流水线并行, DeepSpeed, Megatron]
+  what: 一张卡放不下的大模型，拆到成百上千张卡上一起训。
+  why: |
+    训练大模型的必备工程能力。这个岗位人少、稀缺，薪资在 AI 领域属于顶端。
+  how: |
+    四种并行方式，实际是组合使用：
+    - 数据并行（DP）：每张卡存完整模型、吃不同数据，梯度同步；
+    - 张量并行（TP）：把单层矩阵切开放到多卡，通信密集，适合卡间带宽高的场景；
+    - 流水线并行（PP）：按层切分，不同卡负责不同层，像流水线一样传递；
+    - 专家并行（EP）：MoE 专用，不同专家放不同卡。
+
+    主流框架：Megatron-LM（TP/PP）、DeepSpeed（ZeRO 显存优化）、FSDP。
+
+    核心权衡永远是「计算 vs 通信」：
+    并行切得越细，单卡计算量越小，但通信开销越大。
+    所以 NVLink 和 InfiniBand 这类高速互联才是真正的瓶颈。
+
+    常见坑：显存不够就以为是模型太大，
+    实际上优化器状态（Adam 的 momentum + variance）往往比模型本身更占显存 ——
+    这才是 ZeRO 要解决的问题。
+  prerequisite: [llm, cuda]
+  learn_path:
+    - 先理解四种并行各自切什么、通信模式是什么
+    - 读 ZeRO 论文，理解显存都花在哪了
+    - 在小规模（2-4 卡）上跑一次数据并行，观察梯度同步
+    - 学通信原语：all-reduce、all-gather、reduce-scatter
+  jd_phrases: [分布式训练, 并行训练, Megatron, DeepSpeed, 大规模训练]
+  tags: [Infra, 高级]
+
+- id: embedding
+  name: 向量化
+  zh: 词向量 / 嵌入
+  full_name: Embedding
+  domain: ai
+  level: 入门
+  aliases: [Embedding, 向量化, 词向量, 嵌入, 向量数据库, Vector DB, 语义检索]
+  what: 把文字变成一串数字（向量），意思相近的文字在向量空间里距离也近。
+  why: |
+    所有检索类应用的基础 —— 搜索、推荐、RAG、去重都靠它。
+    门槛低，是入门 AI 应用的好切口。
+  how: |
+    核心直觉：把「语义相似度」转化成了「向量距离」，
+    于是模糊的语义问题变成了可计算的数学问题。
+
+    关键选择：
+    - 用什么模型生成向量（OpenAI embedding / BGE / 中文优化的模型）；
+    - 用什么度量（余弦相似度最常用）；
+    - 存哪里（FAISS 轻量、Milvus/Qdrant 是生产级）。
+
+    常见坑：
+    - 中文模型和英文模型混用，效果断崖式下降；
+    - 忘了归一化，导致内积和余弦相似度结果不一致；
+    - 换了 embedding 模型但没重建索引 —— 新旧向量维度不一致，检索全废。
+  prerequisite: []
+  learn_path:
+    - 理解「语义相似 = 向量距离」这个核心直觉
+    - 用 sentence-transformers 生成一批向量，算相似度感受一下
+    - 建一个 FAISS 索引做语义搜索
+    - 了解中文 embedding 模型的选型
+  jd_phrases: [向量化, Embedding, 向量检索, 语义搜索, 向量数据库]
+  tags: [应用, 入门友好]
+
+- id: multimodal
+  name: 多模态
+  zh: 多模态
+  full_name: Multimodal Model
+  domain: ai
+  level: 进阶
+  aliases: [多模态, Multimodal, VLM, 图文理解, 视觉语言模型, 跨模态]
+  what: 让模型同时能「看」和「读」—— 理解图片、视频、音频和文字之间的关系。
+  why: |
+    纯文本模型的能力已经卷到底了，多模态是下一个增长点。
+    而且它是具身智能的前置技术（机器人必须看懂世界）。
+  how: |
+    主流架构：视觉编码器（ViT）+ 投影层 + 语言模型。
+    图片被切成 patch 编码成向量，通过投影层对齐到语言模型的语义空间，
+    之后就跟文本 token 一起处理。
+
+    关键概念：
+    - 对齐（Alignment）：怎么让「图片特征」和「文字特征」在同一个空间里；
+    - 分辨率处理：高清图怎么切分成多个 patch（AnyRes 类方案）；
+    - 视频理解：多了时间维度，token 数爆炸。
+
+    常见坑：模型能描述图片，但做不了精细的空间推理
+    （「左边第二个物体是什么颜色」经常答错）。
+  prerequisite: [transformer, llm]
+  learn_path:
+    - 理解 VLM 的三段式结构（编码器 + 投影 + LLM）
+    - 读 LLaVA 论文，看开源多模态怎么做的
+    - 跑一次图文问答的推理
+    - 了解空间推理 benchmark，看看当前模型的短板
+  jd_phrases: [多模态, VLM, 图文理解, 视觉语言, 跨模态]
+  tags: [核心, 前沿]
+
+- id: prompt-engineering
+  name: 提示工程
+  zh: 提示工程
+  full_name: Prompt Engineering
+  domain: ai
+  level: 入门
+  aliases: [提示工程, Prompt, 提示词, Prompt Engineering, 上下文工程, Few-shot, CoT]
+  what: 通过精心设计输入，让模型输出你想要的结果 —— 不训练模型，只调它的「输入」。
+  why: |
+    门槛最低、见效最快的 AI 技能。
+    几乎所有 AI 应用岗位都会要求，也是非技术背景转入 AI 的最短路径。
+  how: |
+    核心技巧：
+    - 角色设定：让模型进入特定身份，输出风格和知识面都会变；
+    - 少样本示例（Few-shot）：给几个输入输出样例，比纯描述有效得多；
+    - 思维链（CoT）：「让我们一步步思考」能显著提升推理准确率；
+    - 结构化输出：明确要求 JSON 格式，方便程序解析；
+    - 分解任务：复杂任务拆成多个简单 prompt 串联，比一个巨型 prompt 稳。
+
+    进阶：上下文工程（Context Engineering）——
+    不只写 prompt，还要管理整个上下文窗口（放什么、放哪、怎么压缩）。
+
+    常见坑：把 prompt 写成一坨自然语言，
+    实际上结构化的 prompt（分段落、带标题）效果明显更好。
+  prerequisite: []
+  learn_path:
+    - 掌握角色设定、Few-shot、CoT 三个基础技巧
+    - 做 A/B 对比：同一任务用不同 prompt，量化效果差异
+    - 学结构化输出（JSON schema 约束）
+    - 进阶：上下文工程 —— 长对话怎么压缩、怎么管理
+  jd_phrases: [提示工程, Prompt, 提示词, 上下文工程, CoT]
+  tags: [应用, 入门友好]
+
+- id: rlhf
+  name: RLHF
+  zh: 人类反馈强化学习
+  full_name: Reinforcement Learning from Human Feedback
+  domain: ai
+  level: 高级
+  aliases: [RLHF, 人类反馈强化学习, DPO, 偏好对齐, 对齐, Alignment]
+  what: 用人类的偏好打分来调教模型，让它输出更符合人期待的内容。
+  why: |
+    决定模型「好不好用」的关键一步。SFT 只教会模型听指令，
+    RLHF 才让它学会「怎么答得让人满意」。
+  how: |
+    经典三步：
+    1) 收集人类偏好数据（同一个问题给两个回答，标注哪个更好）；
+    2) 训一个奖励模型（Reward Model）来模拟人类偏好；
+    3) 用 PPO 拿奖励模型的分数去优化策略。
+
+    DPO（Direct Preference Optimization）是简化版：
+    跳过奖励模型，直接用偏好数据优化，
+    省掉了 PPO 的不稳定和复杂性 —— 现在是主流选择。
+
+    常见坑：
+    - 奖励黑客（Reward Hacking）：模型学会讨好奖励模型而不是真正变好，
+      表现为输出变长、变谄媚；
+    - PPO 训练极不稳定，超参敏感。
+  prerequisite: [llm, reinforcement-learning]
+  learn_path:
+    - 理解「为什么要用人类偏好而不是标准答案」
+    - 读 InstructGPT 论文，看 RLHF 三阶段的完整流程
+    - 读 DPO 论文，理解它怎么简化了流程
+    - 了解奖励黑客现象，知道怎么检测
+  jd_phrases: [RLHF, 对齐, 偏好优化, DPO, 奖励模型]
+  tags: [核心, 高级]
+
+- id: ai-safety
+  name: AI 安全
+  zh: AI 安全与对齐
+  full_name: AI Safety & Alignment
+  domain: ai
+  level: 高级
+  aliases: [AI安全, 对齐, Alignment, AI Safety, 红队, Red Teaming, 越狱, 内容安全, 可信AI]
+  what: 保证 AI 系统不做出有害的事 —— 不被诱导说坏话、不泄露隐私、不失控。
+  why: |
+    监管趋严 + 大模型上线必备环节。
+    尤其在国内，内容安全是硬性合规要求，这个岗位需求稳定且稀缺。
+  how: |
+    几个层次：
+    - 内容安全：过滤违法有害内容，中文场景尤其复杂（谐音、变体、隐喻）；
+    - 提示注入防护（Prompt Injection）：防止用户通过精心构造的输入
+      让模型越狱或泄露系统提示词；
+    - 红队测试（Red Teaming）：主动攻击自己的模型，找出漏洞；
+    - 对齐研究：让模型的目标与人类价值一致（更深层的学术问题）。
+
+    技术手段：输入输出双向过滤、宪法 AI（Constitutional AI）、
+    对抗训练、以及专门的安全分类模型。
+
+    常见坑：只做关键词过滤 —— 稍微变体一下就能绕过，
+    需要语义层面的检测。
+  prerequisite: [llm]
+  learn_path:
+    - 了解内容安全的合规要求和常见攻击手法
+    - 学提示注入的经典案例（越狱 prompt 的演化）
+    - 理解为什么关键词过滤不够用
+    - 关注国内外 AI 监管政策的变化
+  jd_phrases: [AI安全, 内容安全, 对齐, 红队, 越狱防护, 可信AI, 合规]
+  tags: [合规, 核心]

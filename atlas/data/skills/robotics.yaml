@@ -1,0 +1,518 @@
+# ============================================================================
+#  技能词典 · 机器人 / 具身智能
+#  ---------------------------------------------------------------------------
+#  每一条都要求三层齐全，缺一层就不算合格：
+#    what  一句话定义 —— 让人秒懂这是什么
+#    why   为什么这个岗位要它 —— 判断自己要不要补
+#    how   展开解释（原理、常见坑、怎么落地）—— 真正学到东西的地方
+#
+#  再加 learn_path（学习路径）和 prerequisite（前置技能），
+#  就能自动排出「先学什么后学什么」。
+#
+#  想补充？复制本文件到 ~/.jd-skill-atlas/skills/ 同名即覆盖内置版本。
+# ============================================================================
+
+label: 机器人 · 具身智能
+
+skills:
+
+- id: vla
+  name: VLA
+  zh: 视觉-语言-动作模型
+  full_name: Vision-Language-Action Model
+  domain: robotics
+  level: 进阶
+  aliases: [Vision-Language-Action, 视觉语言动作模型, 视觉-语言-动作模型, VLA模型, 具身大模型]
+  what: 把「看到的画面 + 听到的指令」直接映射成「机器人该做的动作」的端到端模型。
+  why: |
+    这是当前具身智能最核心的技术路线。过去机器人靠人工写规则（看到红色就抓），
+    现在靠一个大模型直接从视觉和语言生成动作。
+    JD 里出现 VLA，基本意味着这家公司在做通用机器人的「大脑」，而不是专用设备 ——
+    技术含量和融资故事都更硬。
+  how: |
+    典型 VLA 把三块拼起来：视觉编码器（ViT 之类）把画面变成特征；
+    语言模型（通常是预训练 LLM）理解指令；动作头（action head）输出关节角或末端位姿序列。
+
+    训练分两阶段：先在互联网规模的图文数据上预训练，再在真机遥操作数据上微调。
+
+    三个常见坑：
+    1) 动作空间不统一 —— 关节角、末端位姿、离散 token 三种表示各有取舍；
+    2) 真机数据太少，模型过拟合到几十个场景；
+    3) 推理延迟跟不上控制频率（通常需要 10–50 Hz），大模型直接跑会卡。
+  prerequisite: [transformer, imitation-learning]
+  learn_path:
+    - 先搞懂 Transformer 和注意力机制 —— VLA 的骨架就是它
+    - 读 RT-1 / RT-2 / OpenVLA 三篇论文，重点理解「动作离散化」
+    - 跑通一个开源 VLA（OpenVLA 之类）在仿真里的推理
+    - 用 LeRobot 或 ALOHA 采一小批遥操作数据，做一次真实微调
+  jd_phrases: [VLA, 视觉语言动作, 具身大模型, 端到端操作, 机器人基座模型]
+  tags: [核心, 大模型]
+
+- id: slam
+  name: SLAM
+  zh: 同步定位与建图
+  full_name: Simultaneous Localization and Mapping
+  domain: robotics
+  level: 进阶
+  aliases: [Simultaneous Localization and Mapping, 同步定位与建图, 即时定位与地图构建, 建图, 定位建图]
+  what: 机器人一边走一边回答两个问题：「我在哪」和「周围长什么样」，而且互为前提。
+  why: |
+    移动机器人（不论是扫地机还是人形）的底层能力。没有 SLAM，机器人连「自己在哪」都不知道，
+    谈不上导航和操作。这个岗位通常出现在运控、导航、算法团队。
+  how: |
+    核心矛盾：定位需要地图，建图需要知道位置 —— 鸡生蛋问题，靠概率方法同时求解。
+
+    两条主流路线：
+    - 激光 SLAM（2D/3D 激光雷达）：精度高、稳定，工业和服务机器人主流；
+    - 视觉 SLAM（单目/双目/RGB-D）：便宜但易受光照和纹理影响。
+
+    关键概念：前端（特征匹配、光流）→ 后端（图优化、BA）→ 回环检测（loop closure）。
+    经典算法：Cartographer、LOAM、ORB-SLAM、VINS。
+
+    常见坑：动态场景（有人走动）会让特征匹配崩掉；长走廊等退化环境会导致尺度漂移。
+  prerequisite: [linear-algebra, probability]
+  learn_path:
+    - 补线性代数与概率基础：最小二乘、卡尔曼滤波、非线性优化
+    - 读《Probabilistic Robotics》前 10 章，这是公认的入门书
+    - 跑通 ORB-SLAM3 或 Cartographer，在公开数据集上复现
+    - 用 Gazebo/Isaac Sim 搭一个仿真场景，亲手调一次回环检测
+  jd_phrases: [SLAM, 定位建图, 导航算法, 视觉里程计, VIO]
+  tags: [导航, 基础]
+
+- id: motion-control
+  name: 运控
+  zh: 运动控制
+  full_name: Motion Control
+  domain: robotics
+  level: 进阶
+  aliases: [运动控制, 运动控制算法, 全身控制, WBC, Whole Body Control, 关节控制]
+  what: 让机器人的关节按期望的轨迹精确地动起来 —— 决定机器人「站不站得稳、走得顺不顺」。
+  why: |
+    人形机器人最核心、也最难的环节之一。硬件造出来只是第一步，
+    能不能稳定行走、抗扰动、摔倒自己爬起来，全看运控。
+    招这个岗位的公司基本都已经过了原型阶段，进入工程化落地。
+  how: |
+    分层理解：
+    - 底层：关节伺服 + 力矩控制（电流环 → 速度环 → 位置环）
+    - 中层：全身动力学控制（WBC），协调所有关节的力矩分配
+    - 上层：步态规划与落脚点选择（MPC / 强化学习）
+
+    两条路线在打架：
+    - 传统 MPC + WBC：可解释、可控，但建模误差大、调参痛苦；
+    - 强化学习：端到端，效果惊艳（如 Unitree、Boston Dynamics 的部分方案），
+      但训练成本高、Sim2Real 门槛高、安全性难保证。
+
+    常见坑：仿真里走得很好，上真机就摔 —— 因为没建模电机延迟、柔性、地面摩擦变化。
+  prerequisite: [dynamics, mpc, reinforcement-learning]
+  learn_path:
+    - 学多体动力学：拉格朗日方程、浮动基座建模
+    - 读 MIT Cheetah 系列论文，理解 MPC + WBC 的经典组合
+    - 在 MuJoCo 里跑通一个四足/人形行走的 RL 训练（Isaac Gym + PPO）
+    - 亲手做一次 Sim2Real 迁移，体会「仿真到真机」的差距在哪
+  jd_phrases: [运控, 运动控制, 全身控制, 步态规划, 平衡控制]
+  tags: [核心, 硬件]
+
+- id: dexterous-hand
+  name: 灵巧手
+  zh: 灵巧手
+  full_name: Dexterous Hand
+  domain: robotics
+  level: 进阶
+  aliases: [灵巧手, 多指手, 机械手, Dexterous Hand, 末端执行器, 抓手]
+  what: 机器人的手 —— 决定它能完成多精细的操作任务（拧螺丝还是只能抓方块）。
+  why: |
+    「卡脖子」环节。本体做得再好，手不灵巧就干不了活。
+    这是国内创业公司最集中的赛道之一（融资密集），
+    招人方向包括结构设计、驱动、触觉、抓取算法。
+  how: |
+    三个关键抉择：
+    1) 驱动方式 —— 电机内置（灵活但重）vs 腱驱/连杆（轻但复杂）；
+    2) 自由度 —— 6 DoF 够用还是必须 20+ 接近人手；
+    3) 感知 —— 有没有触觉反馈，直接决定能不能做柔顺抓取。
+
+    算法侧的核心是抓取合成（grasp synthesis）：给定物体形状，
+    算出稳定抓取的接触点。难在泛化 —— 换成没见过的物体还行不行。
+
+    常见坑：寿命和成本。能做出原型不难，能月产几千台且良率稳定才是壁垒。
+  prerequisite: [kinematics, force-control]
+  learn_path:
+    - 学机器人运动学：正/逆解、雅可比、工作空间
+    - 读《Robotic Grasping and Manipulation》综述，建立抓取问题框架
+    - 用 MuJoCo 或 Isaac Sim 跑通一个多指抓取仿真
+    - 了解灵巧手的硬件路线差异（电机内置 vs 腱驱），看一篇拆解评测
+  jd_phrases: [灵巧手, 抓取, 末端执行器, 多指操作, 精细操作]
+  tags: [核心, 硬件]
+
+- id: sim2real
+  name: Sim2Real
+  zh: 仿真到现实迁移
+  full_name: Simulation to Reality Transfer
+  domain: robotics
+  level: 高级
+  aliases: [Sim2Real, Sim-to-Real, 仿真到现实, 虚实迁移, 域随机化, Domain Randomization]
+  what: 让「在仿真里训练好的模型」到真机上照样能用 —— 跨越虚拟与现实之间的鸿沟。
+  why: |
+    强化学习在机器人上最大的拦路虎。仿真里练一万小时的成本接近零，
+    但直接搬到真机往往完全失效。谁能解决这个问题，谁就能把训练成本压下来。
+    招这个岗说明公司在做真机落地，不是纯做 demo。
+  how: |
+    主流手段：
+    - 域随机化（Domain Randomization）：训练时随机化物理参数
+      （摩擦力、质量、电机延迟、光照），逼模型学会鲁棒策略；
+    - 系统辨识（System Identification）：反过来，精确测量真机参数去校准仿真；
+    - 残差学习：仿真跑粗策略，真机用小网络修正误差。
+
+    常见坑：随机化范围太小 → 不鲁棒；太大 → 策略变得过于保守，性能上不去。
+    这个「甜点」需要大量实验试出来。
+  prerequisite: [reinforcement-learning, simulation]
+  learn_path:
+    - 先掌握强化学习基础（PPO / SAC），能自己训一个简单任务
+    - 读 OpenAI 的「Solving Rubik's Cube」—— 域随机化的经典案例
+    - 用 Isaac Gym 训练四足行走，然后做一次真机迁移
+    - 系统学习系统辨识：怎么测电机延迟、摩擦系数
+  jd_phrases: [Sim2Real, 仿真到现实, 域随机化, 虚实迁移]
+  tags: [核心, 强化学习]
+
+- id: teleoperation
+  name: 遥操作
+  zh: 遥操作 / 数据采集
+  full_name: Teleoperation
+  domain: robotics
+  level: 入门
+  aliases: [遥操作, 远程操作, 数据采集, 数采, Teleoperation, 动捕, 主从控制]
+  what: 人远程操控机器人干活，并把过程录下来当训练数据。
+  why: |
+    看起来简单，实际上是具身智能的数据命脉 —— 真机数据比黄金还贵，
+    而目前最靠谱的采集方式就是人戴着动捕手套或拿着手柄，
+    一遍遍演示给机器人看。很多公司专门设这个岗位。
+    入门门槛低，是切入具身智能行业最容易的一扇门。
+  how: |
+    三种主流方案：
+    - 动捕式（如 ALOHA）：人穿设备直接映射动作，精度高、成本高；
+    - VR 手柄式：便宜、易部署，但自由度受限；
+    - 主从臂（leader-follower）：一台小臂带动大臂，直观但要两台硬件。
+
+    数据质量比数量更重要：同一任务要覆盖不同物体位置、光照、干扰，
+    否则模型学到的只是「记住动作」而不是「理解任务」。
+
+    常见坑：采集时没记录失败案例，模型不知道什么情况该放弃。
+  prerequisite: []
+  learn_path:
+    - 理解「为什么真机数据不可替代」—— 读 ALOHA、Mobile ALOHA 论文
+    - 亲手用 Quest 手柄或动捕设备采一批数据
+    - 学数据规范：怎么标注任务、怎么划分 train/val
+  jd_phrases: [遥操作, 数据采集, 数采, 主从控制, 动捕]
+  tags: [数据, 入门友好]
+
+- id: force-control
+  name: 力控
+  zh: 力控 / 柔顺控制
+  full_name: Force Control
+  domain: robotics
+  level: 进阶
+  aliases: [力控, 力觉控制, 柔顺控制, 阻抗控制, 导纳控制, Force Control, 力位混合控制]
+  what: 不只知道「手在哪」，还知道「用了多大力」—— 让机器人能拧螺丝、擦玻璃、插插头。
+  why: |
+    位置控制只能做「不碰东西」的任务。一旦要接触、要装配、要合作，
+    就必须力控。这是机器从「展示」走向「干活」的分水岭。
+  how: |
+    两种基本范式：
+    - 阻抗控制（Impedance）：把机器人做成一个弹簧-阻尼系统，
+      位置偏差产生相应的力；
+    - 导纳控制（Admittance）：反过来，测量外力去调整位置。
+
+    实际多用「力位混合控制」：某些方向控位置，某些方向控力
+    （例如擦玻璃：竖直方向控位置，水平方向控力）。
+
+    常见坑：没有六维力传感器就只能靠电流估算，精度差；
+    接触瞬间的冲击容易让控制器发散，需要专门的过渡策略。
+  prerequisite: [dynamics, sensor]
+  learn_path:
+    - 先搞清楚阻抗 vs 导纳的区别，以及各自适用场景
+    - 读《Robot Force Control》入门章节
+    - 在仿真里做一次插孔（peg-in-hole）任务，体验接触力的处理
+    - 了解六维力传感器的原理和标定方法
+  jd_phrases: [力控, 柔顺控制, 阻抗控制, 力觉, 力位混合]
+  tags: [核心, 硬件]
+
+- id: mpc
+  name: MPC
+  zh: 模型预测控制
+  full_name: Model Predictive Control
+  domain: robotics
+  level: 高级
+  aliases: [MPC, 模型预测控制, Model Predictive Control, 滚动时域优化]
+  what: 每一步都往后预测未来几秒，算出一串最优动作，只执行第一步，然后重算。
+  why: |
+    机器人控制里的「工业标准」，尤其在足式机器人、自动驾驶、机械臂轨迹规划中。
+    招这个岗，通常意味着公司在做需要精确动力学控制的产品，
+    而不是纯学习驱动的方案。
+  how: |
+    核心流程：预测模型 → 滚动优化 → 只取第一步 → 下一时刻重来。
+
+    难点在三处：
+    1) 模型准不准（机器人动力学建模误差）；
+    2) 求解快不快（需要在毫秒级解一个带约束的优化问题，常用 OSQP、ACADO）；
+    3) 约束怎么表达（关节限位、力矩上限、避障）。
+
+    非线性 MPC（NMPC）效果好但计算量大，
+    实际工程常做线性化或分段线性近似。
+  prerequisite: [dynamics, optimization, optimal-control]
+  learn_path:
+    - 补最优化基础：凸优化、二次规划（QP）
+    - 读 Rawlings 的《Model Predictive Control》或石川的入门讲义
+    - 用 CasADi 实现一个简单的倒立摆 MPC
+    - 学 OSQP / ACADO 等求解器的工程用法
+  jd_phrases: [MPC, 模型预测控制, 滚动优化, 轨迹优化]
+  tags: [控制, 高级]
+
+- id: reinforcement-learning
+  name: 强化学习
+  zh: 强化学习
+  full_name: Reinforcement Learning
+  domain: robotics
+  level: 高级
+  aliases: [RL, 强化学习, Reinforcement Learning, PPO, SAC, 深度强化学习]
+  what: 不给标准答案，只给奖励，让机器自己试错找出最优策略。
+  why: |
+    机器人领域最热的方法论。运控、抓取、灵巧操作都在用它。
+    但要区分：很多 JD 只是把 RL 当加分项，
+    真正把 RL 用作核心产线的公司不多 —— 面试时值得问清楚。
+  how: |
+    两大流派：
+    - 在线策略（On-policy，如 PPO）：稳但样本效率低；
+    - 离线策略（Off-policy，如 SAC、TD3）：样本效率高但难调。
+
+    机器人上的特殊挑战：真机采样极贵，所以普遍在仿真里训练
+    （Isaac Gym 能并行几千个环境），再迁移到真机（见 Sim2Real）。
+
+    常见坑：奖励函数设计（reward shaping）是玄学，
+    奖励写歪了模型会学会刷分而不是完成任务；
+    训练不稳定、对随机种子敏感。
+  prerequisite: [deep-learning, probability]
+  learn_path:
+    - 从 Sutton & Barto《强化学习导论》建立概念框架
+    - 用 Stable-Baselines3 在 CartPole、MuJoCo 上跑通 PPO/SAC
+    - 上 Isaac Gym，训练一个四足机器人行走
+    - 读一篇 reward shaping 的实战总结，理解「奖励设计」的坑
+  jd_phrases: [强化学习, RL, PPO, SAC, 深度强化学习, 策略学习]
+  tags: [核心, 大模型]
+
+- id: imitation-learning
+  name: 模仿学习
+  zh: 模仿学习
+  full_name: Imitation Learning
+  domain: robotics
+  level: 进阶
+  aliases: [模仿学习, 行为克隆, Behavior Cloning, BC, 示教学习, Imitation Learning]
+  what: 不定义奖励，直接学人的示范动作 —— 「看我怎么做，你照着做」。
+  why: |
+    比强化学习更实用：奖励函数难写，但示范数据好采（遥操作就行）。
+    当前大部分具身智能公司的主力方法。
+  how: |
+    最基础的是行为克隆（BC）：把「观察 → 动作」当监督学习来训。
+
+    致命弱点：**分布偏移（distribution shift）**。
+    训练时只见过人走过的轨迹，一旦模型自己走偏一点，
+    进入没见过的状态就彻底崩掉，误差累积越来越大。
+
+    缓解手段：
+    - DAgger：让模型自己跑，人实时纠正错误；
+    - 加噪声数据增强；
+    - 用扩散策略（Diffusion Policy）建模多模态动作分布，
+      解决「同一场景有多种合理动作」的问题。
+  prerequisite: [deep-learning, teleoperation]
+  learn_path:
+    - 理解 BC 的分布偏移问题 —— 这是模仿学习的核心痛点
+    - 读 Diffusion Policy 论文，理解为什么它能缓解多模态问题
+    - 用公开数据集（如 RoboMimic）跑通一次 BC 训练
+    - 对比 BC 与 RL 在同一任务上的表现差异
+  jd_phrases: [模仿学习, 行为克隆, 示教, 示范学习]
+  tags: [核心, 大模型]
+
+- id: world-model
+  name: 世界模型
+  zh: 世界模型
+  full_name: World Model
+  domain: robotics
+  level: 高级
+  aliases: [世界模型, World Model, 预测模型, 物理引擎学习, 神经仿真]
+  what: 让 AI 在「脑子里」预演：如果我这么做，接下来会发生什么。
+  why: |
+    2026 年最热的赛道之一。核心思路是让机器人先在想象中试错，
+    减少对真机数据的依赖 —— 数据是具身智能最贵的资源。
+    这类公司多为早期、估值高、团队小，是「上车早」的机会。
+  how: |
+    两条技术路线：
+    - 视频预测式：给定当前画面和动作，预测下一帧（如 Sora 类思路搬到机器人）；
+    - 隐空间式：不重建画面，只学一个压缩的状态转移模型（如 Dreamer）。
+
+    价值在于：可以在世界模型里做「想象式 rollout」来训练策略，
+    或用它做模型预测控制（MPC）里的预测器。
+
+    常见坑：长时预测会累积误差，几秒后就完全失真；
+    物理规律（刚体碰撞、流体）学不准。
+  prerequisite: [deep-learning, generative-model, reinforcement-learning]
+  learn_path:
+    - 读 Dreamer 系列（DreamerV1/V2/V3），理解隐空间世界模型
+    - 看 Genie、Sora 一类工作，理解视频生成即世界模型这条线
+    - 动手：在简单环境（如 Atari）里训一个世界模型做 planning
+  jd_phrases: [世界模型, World Model, 物理AI, 预测模型, 神经渲染]
+  tags: [前沿, 大模型]
+
+- id: motion-planning
+  name: 运动规划
+  zh: 运动规划
+  full_name: Motion Planning
+  domain: robotics
+  level: 进阶
+  aliases: [运动规划, 路径规划, Motion Planning, 轨迹规划, Path Planning, 避障]
+  what: 在「有障碍物的空间」里找一条从起点到终点的安全路径。
+  why: |
+    移动机器人和机械臂的基础能力，几乎所有机器人岗位都要求。
+    和 SLAM 的区别：SLAM 回答「我在哪」，规划回答「我该怎么走」。
+  how: |
+    经典算法分两类：
+    - 采样式（RRT、RRT*、PRM）：高维空间好用，机械臂主流；
+    - 搜索式（A*、Dijkstra、Hybrid A*）：低维网格地图高效。
+
+    现代趋势是「规划 + 优化」：先用采样法找一条可行路径，
+    再用轨迹优化（如 CHOMP、TrajOpt）把它修得平滑、动力学可行。
+
+    常见坑：高维空间（7 自由度机械臂）采样效率暴跌；
+    动态障碍物需要重规划（replanning）能力。
+  prerequisite: [algorithms, kinematics]
+  learn_path:
+    - 学 A* 和 RRT，自己实现一遍（比调库收获大）
+    - 读《Planning Algorithms》（LaValle）相关章节
+    - 用 OMPL 库在仿真里给机械臂做一次避障规划
+    - 了解轨迹优化：CHOMP / TrajOpt 的思路
+  jd_phrases: [运动规划, 路径规划, 避障, 轨迹优化, 导航规划]
+  tags: [导航, 基础]
+
+- id: tactile-sensing
+  name: 触觉传感
+  zh: 触觉感知
+  full_name: Tactile Sensing
+  domain: robotics
+  level: 进阶
+  aliases: [触觉传感, 触觉传感器, 电子皮肤, Tactile Sensing, 触觉反馈, 力触觉]
+  what: 给机器人装上「皮肤」，让它感觉到压力和接触 —— 闭眼也能摸出抓没抓住。
+  why: |
+    视觉有遮挡、有延迟，精细操作必须靠触觉兜底。
+    国内这个环节的公司在做国产替代，技术壁垒高、竞争相对少。
+    招这个岗说明公司在做真·精细操作，不是摆拍。
+  how: |
+    主流技术路线：
+    - 视触觉（GelSight 类）：用摄像头拍弹性体的形变，分辨率极高；
+    - 电容/压阻阵列：便宜，可大面积铺，但精度一般；
+    - 压电/磁式：响应快，适合动态力测量。
+
+    算法侧的挑战：触觉信号是高维时序数据，
+    如何与视觉融合（多模态）是研究热点。
+
+    常见坑：耐用性 —— 传感器要经得起几万次抓取；
+    布线复杂，多指手的走线是工程噩梦。
+  prerequisite: [sensor, signal-processing]
+  learn_path:
+    - 了解三类触觉传感器原理与优劣
+    - 读 GelSight 系列论文，看视触觉能做到什么程度
+    - 找一篇「视触觉融合」的综述，理解多模态怎么配合
+  jd_phrases: [触觉传感, 电子皮肤, 力触觉, 触觉反馈, 多模态感知]
+  tags: [硬件, 卡脖子]
+
+- id: simulation
+  name: 机器人仿真
+  zh: 机器人仿真
+  full_name: Robotics Simulation
+  domain: robotics
+  level: 入门
+  aliases: [仿真, 机器人仿真, Isaac Sim, MuJoCo, Gazebo, PyBullet, 数字孪生, Simulator]
+  what: 在电脑里造一个虚拟机器人世界 —— 训练、测试、验证都在里面做，比真机便宜一万倍。
+  why: |
+    现代机器人研发的必备基础设施。
+    强化学习没有仿真根本跑不起来；没有仿真，每次改代码都要上真机，成本无法承受。
+    这是入门机器人行业最好上手的方向之一。
+  how: |
+    主流平台各有分工：
+    - MuJoCo：物理精度高，学术论文首选，轻量；
+    - Isaac Sim/Gym：NVIDIA 出品，GPU 并行几千个环境，RL 训练标配；
+    - Gazebo：ROS 生态原生，系统集成测试常用；
+    - PyBullet：轻量、上手快，适合教学和快速原型。
+
+    关键能力是「搭场景」：导入 URDF 模型、配置传感器、
+    设计任务环境和随机化参数。
+
+    常见坑：仿真与现实差距（见 Sim2Real）；
+    复杂场景渲染慢，拖累训练吞吐。
+  prerequisite: []
+  learn_path:
+    - 从 PyBullet 或 MuJoCo 入门，跑通一个官方 demo
+    - 学 URDF/SDF 格式，把自己的模型导进去
+    - 上 Isaac Gym，体验 GPU 并行训练的加速比
+    - 搭一个完整任务场景（含抓取目标和障碍物）
+  jd_phrases: [仿真, Isaac Sim, MuJoCo, Gazebo, 数字孪生, 仿真平台]
+  tags: [基础, 入门友好]
+
+- id: actuator
+  name: 执行器 / 关节模组
+  zh: 关节模组
+  full_name: Actuator & Joint Module
+  domain: robotics
+  level: 进阶
+  aliases: [执行器, 关节模组, 一体化关节, Actuator, 谐波减速器, 电机, 伺服, 力矩电机]
+  what: 机器人的「肌肉」—— 电机 + 减速器 + 编码器 + 驱动器打包成的一体化关节。
+  why: |
+    成本大头（占人形机器人 BOM 的很大比例），也是国产替代的主战场。
+    招这个岗的包括本体公司和上游零部件公司，后者融资也很活跃。
+  how: |
+    核心参数怎么权衡：
+    - 扭矩密度（N·m/kg）：决定机器人能做多重活；
+    - 背隙（backlash）：影响精度，谐波减速器优于行星；
+    - 反驱力矩：影响柔顺性和安全性；
+    - 成本与良率：真正决定能不能量产。
+
+    技术路线之争：行星减速器（便宜、成熟）vs 谐波减速器（精度高、贵）
+    vs 准直驱（力控好、适合足式）。
+
+    常见坑：散热。关节长时间工作会过热降额，这是实机上很头疼的问题。
+  prerequisite: [mechanics, electronics]
+  learn_path:
+    - 了解三类减速器的原理与适用场景
+    - 学电机控制基础：FOC、电流环/速度环/位置环
+    - 拆解或评测一款市售关节模组，看它的参数表
+  jd_phrases: [关节模组, 执行器, 减速器, 电机控制, 一体化关节]
+  tags: [硬件, 卡脖子]
+
+- id: embodied-ai
+  name: 具身智能
+  zh: 具身智能
+  full_name: Embodied AI
+  domain: robotics
+  level: 进阶
+  aliases: [具身智能, Embodied AI, 具身, 具身智能体]
+  what: 让 AI 拥有身体，在物理世界里感知、决策、行动 —— 而不是只会在屏幕里聊天。
+  why: |
+    这是整个赛道的名字。几乎所有相关 JD 都会提到它。
+    理解它的边界（和传统机器人的区别、和大模型的区别）是入行的第一步。
+  how: |
+    与传统机器人的区别：传统机器人是「为特定任务写死的程序」，
+    具身智能强调「一个模型泛化到多种任务」。
+
+    与大模型的关系：具身智能通常复用 LLM/VLM 的预训练能力，
+    再加上动作输出层（就是 VLA）。
+
+    公认的三大瓶颈：
+    1) 数据 —— 真机数据太贵，仿真数据有 gap；
+    2) 泛化 —— 换个环境/物体就不行；
+    3) 长程任务 —— 多步骤任务的规划与纠错还没解决。
+
+    行业共识是这是个 10–20 年周期的事，
+    短期能落地的多是限定场景（工业、物流、特种）。
+  prerequisite: []
+  learn_path:
+    - 读一篇具身智能综述，建立整体地图
+    - 搞清楚它和「机器人学」「大模型」各自的边界
+    - 关注行业动向：谁在真落地、谁在讲故事
+  jd_phrases: [具身智能, 具身, 物理AI, 具身智能体]
+  tags: [概念, 入门友好]

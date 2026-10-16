@@ -1,0 +1,324 @@
+# ============================================================================
+#  技能词典 · 工具与工程环境
+#  ---------------------------------------------------------------------------
+#  这些不是「概念」而是「工具」，但它们同样高频出现在 JD 里，
+#  而且很多转行的人不清楚每个工具的定位和该学到什么程度。
+#  格式说明见 robotics.yaml 顶部。
+# ============================================================================
+
+label: 工具 · 工程环境
+
+skills:
+
+- id: python
+  name: Python
+  zh: Python
+  full_name: Python
+  domain: data
+  level: 入门
+  aliases: [Python, python, Python3]
+  what: 数据、AI、脚本领域的通用语言 —— 上手快、生态强、几乎无处不在。
+  why: |
+    AI/机器人行业的默认语言。JD 里出现 Python，说明岗位要你自己动手跑数据或模型，
+    而不是只做 PPT。这是最值得优先补的工具技能。
+  how: |
+    分层次看该学到什么程度：
+    - **够用级**：会写脚本、读别人的代码、用 pip 装包 —— 数据分析和调模型都需要；
+    - **熟练级**：掌握 numpy/pandas 做数据处理，会写类和模块，懂虚拟环境管理；
+    - **工程级**：理解 GIL、异步、内存管理，能优化性能、写生产级代码。
+
+    必学的库（按用途）：
+    - 数据：numpy、pandas
+    - 机器学习：scikit-learn、PyTorch
+    - 可视化：matplotlib、plotly
+    - 爬虫/请求：requests、httpx
+
+    常见坑：不管理虚拟环境，把系统环境搞乱。
+    每个项目都应该有独立的 venv 或 conda 环境。
+  prerequisite: []
+  learn_path:
+    - 语法基础 + 文件读写 + 异常处理（1-2 周）
+    - 打通 numpy 和 pandas（数据分析的日常）
+    - 学虚拟环境管理：venv / conda / uv
+    - 做一个完整小项目：抓数据 → 清洗 → 分析 → 出图
+  jd_phrases: [Python, 脚本, 数据处理, 编程能力]
+  tags: [工具, 必备]
+
+- id: pytorch
+  name: PyTorch
+  zh: PyTorch
+  full_name: PyTorch
+  domain: ai
+  level: 进阶
+  aliases: [PyTorch, pytorch, Torch, torch]
+  what: 当前深度学习研究的事实标准框架 —— 几乎所有论文开源代码都是它写的。
+  why: |
+    AI 岗位的必备工具。不会 PyTorch，等于看不懂开源模型、改不了别人的代码。
+    机器人领域的 VLA、世界模型、强化学习实现也基本都用它。
+  how: |
+    学习路径分三层：
+    - **会用**：加载预训练模型、做推理、微调 —— 大多数应用岗够用；
+    - **会改**：能读懂模型结构、替换组件、自定义 loss 和 dataset；
+    - **会写**：能从零实现网络、写自定义算子、做性能优化。
+
+    核心概念：Tensor（张量）、autograd（自动求导）、nn.Module（模型基类）、
+    DataLoader（数据管道）、device（CPU/GPU 切换）。
+
+    常见坑：
+    - 忘记 `.to(device)` 导致 CPU/GPU 不一致报错；
+    - 训练时忘了 `model.train()` / `model.eval()` 切换，dropout 和 BN 行为不对；
+    - 推理时没加 `torch.no_grad()`，白白吃显存。
+  prerequisite: [python, deep-learning]
+  learn_path:
+    - 跑通官方 60 分钟入门教程
+    - 手写一次完整的训练循环（别用高级封装，理解每一步）
+    - 加载一个预训练模型做微调
+    - 学 torchvision / transformers 生态
+  jd_phrases: [PyTorch, 深度学习框架, 模型训练, TensorFlow]
+  tags: [工具, 必备]
+
+- id: cuda
+  name: CUDA / GPU
+  zh: GPU 计算
+  full_name: CUDA & GPU Computing
+  domain: ai
+  level: 高级
+  aliases: [CUDA, GPU, 显卡, 显存, 并行计算, cuda, NCCL, 算力优化]
+  what: 用显卡做大规模并行计算 —— 深度学习能跑起来全靠它。
+  why: |
+    分两种岗位：用 GPU（训练模型）和优化 GPU（写算子、做性能调优）。
+    前者只需要会配置环境，后者是稀缺的 Infra 人才，薪资很高。
+    看 JD 怎么描述就知道是哪一种。
+  how: |
+    需要区分三个层次：
+    - **会用**：装驱动、配 CUDA 环境、把模型放到 GPU 上跑；
+    - **会调**：看懂显存占用、用 nvidia-smi 排查、写多卡训练；
+    - **会写**：写 CUDA kernel、用 Triton 做算子融合、优化访存模式。
+
+    关键概念：
+    - 显存 ≠ 内存，OOM 是最常见的报错；
+    - 计算能力（compute capability）决定支持哪些算子；
+    - NCCL 是多卡通信库，分布式训练的底层。
+
+    常见坑：CUDA 版本、驱动版本、PyTorch 版本三者必须匹配，
+    版本不匹配的报错信息往往很难懂。
+  prerequisite: [pytorch, linux]
+  learn_path:
+    - 先把环境配明白：理解驱动 / CUDA / cuDNN / 框架的版本关系
+    - 学 nvidia-smi 和显存分析工具，能定位 OOM 原因
+    - 跑一次多卡训练（DDP），理解数据并行
+    - 进阶：读一篇算子优化实战（如 FlashAttention）
+  jd_phrases: [CUDA, GPU, 显存优化, 多卡训练, 算力]
+  tags: [工具, Infra]
+
+- id: linux
+  name: Linux
+  zh: Linux
+  full_name: Linux
+  domain: data
+  level: 入门
+  aliases: [Linux, linux, Ubuntu, CentOS, 服务器, Shell, 命令行, bash]
+  what: 服务器上的操作系统 —— AI/机器人行业的代码基本都是跑在 Linux 上的。
+  why: |
+    JD 里写 Linux 几乎都是「必需项」而不是加分项。
+    很多人卡在这一步：算法会写，但一上服务器就不会操作了。
+  how: |
+    必备技能清单：
+    - 文件操作：ls / cd / cp / mv / rm / find / grep
+    - 权限：chmod / chown / sudo 的边界
+    - 进程管理：ps / top / kill / nohup / screen / tmux
+    - 网络：ssh / scp / rsync / 端口查看
+    - 包管理：apt / yum
+    - 环境变量：PATH / export / .bashrc
+
+    进阶：写 shell 脚本做自动化、用 screen/tmux 保持长任务不掉线。
+
+    常见坑：用 `rm -rf` 时路径写错（这个错误的代价可能是灾难性的）；
+    长任务忘了用 nohup 或 tmux，一断连就前功尽弃。
+  prerequisite: []
+  learn_path:
+    - 装一个 Linux（WSL 或虚拟机），日常用它
+    - 练熟 20 个核心命令（不用背，用多了自然会）
+    - 学 tmux：跑长任务必备
+    - 写一个自动化 shell 脚本
+  jd_phrases: [Linux, 服务器, Shell, 命令行]
+  tags: [工具, 必备]
+
+- id: ros
+  name: ROS
+  zh: 机器人操作系统
+  full_name: Robot Operating System
+  domain: robotics
+  level: 进阶
+  aliases: [ROS, ROS2, Robot Operating System, 机器人操作系统, rospy, rviz, gazebo集成]
+  what: 不是操作系统，而是一套机器人软件的「通信框架 + 工具集」——让各个模块（感知、规划、控制）能互相说话。
+  why: |
+    机器人行业的通用语言。几乎所有机器人岗位都会提到它。
+    不会 ROS，就没法参与真实机器人项目的开发。
+  how: |
+    核心是「节点（node）+ 话题（topic）+ 服务（service）」的通信模型：
+    - 节点：一个独立进程，负责某个功能（如摄像头驱动）；
+    - 话题：发布/订阅模式，异步、多对多（如传感器数据流）；
+    - 服务：请求/响应模式，同步、一对一（如查询状态）。
+
+    ROS1 vs ROS2 的关键区别：
+    - ROS1 依赖中心节点（master），单点故障；
+    - ROS2 改用 DDS 通信，去中心化、支持实时性和多机。
+
+    2026 年新项目基本都用 ROS2，但存量项目还是 ROS1 为主。
+
+    必须掌握的工具：rviz（可视化）、rosbag（数据录制回放）、tf（坐标变换）。
+    **tf 是最容易把人绕晕的部分** —— 多个坐标系之间的转换关系。
+
+    常见坑：通信延迟。ROS 基于 TCP，在高频控制场景下延迟不可控，
+    所以实时控制部分往往绕开 ROS 直接写。
+  prerequisite: [linux, cpp, python]
+  learn_path:
+    - 装 ROS2，跑通官方 turtlesim 教程
+    - 理解 topic / service / action 三种通信方式的区别
+    - 学 tf2：搞清楚坐标系变换树
+    - 用 rosbag 录一段数据再回放，体会它的用途
+  jd_phrases: [ROS, ROS2, 机器人开发, 节点通信, rviz]
+  tags: [工具, 机器人必备]
+
+- id: docker
+  name: Docker
+  zh: 容器化
+  full_name: Docker
+  domain: data
+  level: 入门
+  aliases: [Docker, docker, 容器, 容器化, 镜像, Kubernetes, K8s, 云原生]
+  what: 把「代码 + 环境」打包成一个盒子，到哪都能一模一样地跑起来。
+  why: |
+    「我这跑得挺好的啊」这个经典问题的解药。
+    模型部署、服务上线基本都靠它。JD 里出现说明岗位涉及工程落地。
+  how: |
+    核心概念：
+    - 镜像（image）：只读模板，包含代码和依赖；
+    - 容器（container）：镜像的运行实例；
+    - Dockerfile：定义怎么构建镜像。
+
+    解决的核心问题：**环境一致性**。
+    Python 版本、CUDA 版本、系统库的差异，会让同一个代码在不同机器上表现不同。
+
+    Kubernetes（K8s）是容器编排：管理成百上千个容器的调度、扩缩容、
+    故障恢复。AI 服务上量之后必然会遇到。
+
+    常见坑：
+    - 镜像越做越大（没清理缓存、装了不必要的依赖）；
+    - 把数据打进镜像（应该用挂载卷）；
+    - 不懂容器的网络模式，服务之间连不上。
+  prerequisite: [linux]
+  learn_path:
+    - 理解镜像和容器的区别
+    - 写一个 Dockerfile 把自己的项目打包
+    - 学 docker-compose 编排多容器
+    - 了解 K8s 的基本概念（Pod / Service / Deployment）
+  jd_phrases: [Docker, 容器, K8s, Kubernetes, 部署]
+  tags: [工具, 工程]
+
+- id: cpp
+  name: C++
+  zh: C++
+  full_name: C++
+  domain: data
+  level: 进阶
+  aliases: [C++, cpp, C语言, C++11, STL]
+  what: 性能敏感场景的语言 —— 机器人实时控制、高性能推理、仿真引擎都用它。
+  why: |
+    机器人行业的第二语言。算法用 Python 验证，上真机用 C++ 重写 ——
+    这是常规流程。JD 里要求 C++，说明岗位要碰实际运行的代码。
+  how: |
+    和 Python 的关键差异（面试常问）：
+    - 手动内存管理（智能指针 unique_ptr / shared_ptr）；
+    - 编译型语言，需要构建系统（CMake）；
+    - 零开销抽象，性能可控；
+    - 模板元编程，编译期计算。
+
+    学 C++ 的实用路径不是背语法，而是：
+    1) 能读懂别人的 C++ 代码；
+    2) 会写中等复杂度的模块；
+    3) 理解内存模型和性能特征。
+
+    机器人领域常配合：Eigen（矩阵运算）、PCL（点云）、OpenCV（视觉）。
+
+    常见坑：内存泄漏和野指针 —— 这是 C++ 最经典的坑，
+    现代 C++ 用智能指针可以大幅缓解，但要真的理解所有权语义。
+  prerequisite: [programming-basics]
+  learn_path:
+    - 学基础语法和 STL（容器、算法、迭代器）
+    - 理解指针、引用、栈与堆的区别
+    - 学现代 C++（智能指针、移动语义、lambda）
+    - 用 CMake 构建一个多文件项目
+  jd_phrases: [C++, C语言, STL, 高性能, 底层开发]
+  tags: [工具, 机器人]
+
+- id: git
+  name: Git
+  zh: 版本控制
+  full_name: Git
+  domain: data
+  level: 入门
+  aliases: [Git, git, GitHub, GitLab, 版本控制, 代码管理, 分支管理]
+  what: 代码的「时光机 + 协作工具」—— 记录每次改动，让多人能同时开发。
+  why: |
+    看起来最基础，但很多人只会 add/commit/push 三个命令，
+    一遇到冲突或需要回退就懵。这是工程能力的底线。
+  how: |
+    必须掌握到能独立处理问题的程度：
+    - 基础：clone / add / commit / push / pull
+    - 分支：branch / checkout / merge / rebase 的区别
+    - 救援：reset / revert / stash / reflog（**reflog 是后悔药**）
+    - 协作：PR / code review / 冲突解决
+
+    关键认知：
+    - `merge` 保留分支历史，`rebase` 拉成直线 —— 各有适用场景；
+    - `reset --hard` 会丢改动，`revert` 是安全的反向提交；
+    - 冲突不可怕，理解了「同一行被两边改了」就明白了。
+
+    常见坑：直接在 main 分支上开发；
+    把不该提交的东西（密钥、大数据文件）提交上去，且忘了加 .gitignore。
+  prerequisite: []
+  learn_path:
+    - 练熟基础命令，理解工作区/暂存区/仓库三层结构
+    - 学分支操作，练习制造并解决一次冲突
+    - 学会 reflog 救命（恢复误删的提交）
+    - 学 .gitignore 和提交规范
+  jd_phrases: [Git, 版本管理, GitHub, 代码协作]
+  tags: [工具, 必备]
+
+- id: sql
+  name: SQL
+  zh: SQL
+  full_name: Structured Query Language
+  domain: data
+  level: 入门
+  aliases: [SQL, sql, MySQL, PostgreSQL, 数据库, 查询, Hive, 数仓]
+  what: 从数据库里取数的语言 —— 数据分析的必备工具，没有之一。
+  why: |
+    几乎所有需要碰数据的岗位都要求。门槛低（几天能上手），
+    但会成为很多分析类工作能否独立完成的瓶颈。
+  how: |
+    核心就是三条：
+    - `SELECT ... FROM ... WHERE`：筛选
+    - `JOIN`：把多张表连起来（inner / left / right / full）
+    - `GROUP BY ... HAVING`：分组聚合
+
+    进阶但必须会的：
+    - **窗口函数**（ROW_NUMBER / RANK / LAG / LEAD）——
+      做同比环比、排名、去重时的关键；
+    - 子查询和 CTE（WITH 语句）—— 复杂查询的可读性靠它；
+    - 执行计划（EXPLAIN）—— 查询慢的时候怎么优化。
+
+    常见坑：
+    - JOIN 之后行数变多却没察觉（一对多关系导致重复计数）；
+    - NULL 参与比较永远返回 NULL，用 IS NULL 而不是 = NULL；
+    - 聚合函数和普通列混用没加 GROUP BY。
+  prerequisite: []
+  learn_path:
+    - 学基础查询语法（一两天足够）
+    - 重点练 JOIN 和 GROUP BY
+    - 掌握窗口函数（这是分水岭）
+    - 找一个真实数据集，练习回答业务问题
+  jd_phrases: [SQL, 数据库, 数据查询, 数据提取]
+  tags: [工具, 必备]

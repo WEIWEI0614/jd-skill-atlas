@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JD 技能图谱 · 学习平台</title>
+<style>
+:root{--bg:#0b0f14;--panel:#141a21;--panel2:#1b222b;--line:#2a333e;--fg:#e6edf3;--dim:#8b949e;
+--accent:#58a6ff;--must:#f85149;--nice:#d29922;--rare:#3fb950;--ok:#3fb950;--purple:#a371f7;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+header{position:sticky;top:0;z-index:20;background:rgba(11,15,20,.94);backdrop-filter:blur(10px);
+border-bottom:1px solid var(--line);padding:13px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:16px;margin:0;font-weight:600;white-space:nowrap}
+h1 small{color:var(--dim);font-weight:400;font-size:11.5px;margin-left:6px}
+.spacer{flex:1}
+input[type=search]{background:var(--panel2);border:1px solid var(--line);border-radius:7px;
+color:var(--fg);padding:7px 12px;font:inherit;font-size:13px;width:230px}
+input[type=search]:focus{outline:none;border-color:var(--accent)}
+button{font:inherit;font-size:12.5px;border-radius:7px;border:1px solid var(--line);
+background:var(--panel2);color:var(--fg);padding:6px 12px;cursor:pointer;transition:.15s}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.on{background:#1f6feb22;border-color:var(--accent);color:var(--accent)}
+main{max-width:1080px;margin:0 auto;padding:20px 22px 80px}
+.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin-bottom:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 14px}
+.stat .n{font-size:22px;font-weight:600;color:var(--accent);line-height:1.2}
+.stat .l{font-size:11.5px;color:var(--dim);margin-top:2px}
+.progress{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:14px 16px;
+margin-bottom:20px}
+.progress .bar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:8px}
+.progress .bar i{display:block;height:100%;background:linear-gradient(90deg,#3fb950,#58a6ff);
+transition:width .3s}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.tabs button{padding:6px 14px}
+.tier-note{font-size:12px;color:var(--dim);margin-bottom:14px;padding-left:2px}
+.skill{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+margin-bottom:9px;overflow:hidden;transition:.15s}
+.skill:hover{border-color:#3d4a58}
+.skill.must{border-left:3px solid var(--must)}
+.skill.nice{border-left:3px solid var(--nice)}
+.skill.rare{border-left:3px solid var(--rare)}
+.skill.have{opacity:.62}
+.head{display:flex;align-items:baseline;gap:12px;padding:13px 16px;cursor:pointer;flex-wrap:wrap}
+.head .nm{font-size:14.5px;font-weight:550}
+.head .zh{color:var(--dim);font-size:12.5px;font-weight:400}
+.head .pct{margin-left:auto;font-size:13px;font-weight:600;white-space:nowrap}
+.head .lv{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:20px;padding:1px 8px}
+.cbar{height:4px;background:var(--panel2);margin:0 16px 10px;border-radius:2px;overflow:hidden}
+.cbar i{display:block;height:100%;background:var(--accent)}
+.body{padding:0 16px 16px;display:none;border-top:1px solid var(--line);margin-top:2px}
+.skill.open .body{display:block}
+.body h4{font-size:12.5px;color:var(--accent);margin:14px 0 6px;font-weight:600;letter-spacing:.3px}
+.body p{margin:0 0 8px;white-space:pre-wrap}
+.body ol,.body ul{margin:0 0 8px;padding-left:20px}
+.body li{margin-bottom:5px}
+.body blockquote{margin:6px 0;padding:7px 12px;border-left:2px solid var(--line);
+background:var(--panel2);border-radius:0 6px 6px 0;color:var(--dim);font-size:12.5px}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:20px;
+background:var(--panel2);border:1px solid var(--line);color:var(--dim);margin:0 5px 5px 0}
+.tag.pre{border-color:#9e6a03;color:var(--nice)}
+.actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--dim);text-align:center;padding:50px 20px;font-style:italic}
+.gapbox{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--purple);
+border-radius:9px;padding:15px 17px;margin-bottom:18px}
+.gapbox h3{margin:0 0 8px;font-size:14px}
+.gapbox .miss{color:var(--must);font-size:12.5px}
+.loading{color:var(--dim);text-align:center;padding:30px}
+.dom{font-size:11px;color:var(--dim);background:var(--panel2);border-radius:4px;padding:1px 6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧭 JD 技能图谱<small>jd-skill-atlas</small></h1>
+  <span class="spacer"></span>
+  <input type="search" id="q" placeholder="搜索技能…">
+  <button id="btnGap">只看缺口</button>
+</header>
+
+<main>
+  <div id="app"><div class="loading">加载中…</div></div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const api = async (p, body) => (await fetch(p, body ? {
+  method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+} : {})).json();
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let DATA = null, HAVE = new Set(JSON.parse(localStorage.getItem('atlas_have') || '[]'));
+let TIER = 'all', GAPONLY = false, Q = '';
+
+const TIER_LABEL = {must:['🔴 必备','≥25% 的岗位都要求 —— 这是入场券'],
+                    nice:['🟡 加分','8%–25%，会让你在候选池里更靠前'],
+                    rare:['🟢 差异化','<8%，少见但一旦命中就是优势']};
+
+function tierOf(id){
+  if(!DATA?.tiers) return 'rare';
+  if(DATA.tiers.must.includes(id)) return 'must';
+  if(DATA.tiers.nice.includes(id)) return 'nice';
+  return 'rare';
+}
+
+function saveHave(){
+  localStorage.setItem('atlas_have', JSON.stringify([...HAVE]));
+  api('/api/have', {have: [...HAVE]});
+}
+
+function render(){
+  if(!DATA || DATA.empty){
+    $('#app').innerHTML = `<div class="empty">
+      还没有分析结果。<br><br>
+      在终端运行：<br>
+      <code style="background:#1b222b;padding:6px 12px;border-radius:6px;display:inline-block;margin-top:8px">
+      atlas analyze &lt;JD文件或目录&gt;</code><br><br>
+      然后刷新本页。
+    </div>`;
+    return;
+  }
+
+  const skills = DATA.skills || [];
+  const total = DATA.total_jds || 1;
+
+  let list = skills.filter(s => {
+    const t = tierOf(s.id);
+    if(TIER !== 'all' && t !== TIER) return false;
+    if(GAPONLY && HAVE.has(s.id)) return false;
+    if(Q){
+      const hay = [s.name,s.zh,s.full_name,...(s.aliases||[]),...(s.tags||[])].join(' ').toLowerCase();
+      if(!hay.includes(Q)) return false;
+    }
+    return true;
+  });
+
+  const mustN = (DATA.tiers?.must||[]).length;
+  const haveMust = (DATA.tiers?.must||[]).filter(id=>HAVE.has(id)).length;
+  const pct = mustN ? Math.round(haveMust/mustN*100) : 0;
+
+  let html = `<div class="overview">
+    <div class="stat"><div class="n">${total}</div><div class="l">分析的 JD 条数</div></div>
+    <div class="stat"><div class="n">${skills.length}</div><div class="l">命中的技能</div></div>
+    <div class="stat"><div class="n">${mustN}</div><div class="l">必备能力</div></div>
+    <div class="stat"><div class="n">${HAVE.size}</div><div class="l">你已掌握</div></div>
+  </div>`;
+
+  if(mustN){
+    html += `<div class="progress">
+      <div style="display:flex;justify-content:space-between;font-size:13px">
+        <span>必备能力掌握进度</span>
+        <b style="color:var(--ok)">${haveMust}/${mustN} · ${pct}%</b>
+      </div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </div>`;
+  }
+
+  html += `<div class="tabs">
+    <button data-tier="all" class="${TIER==='all'?'on':''}">全部 ${skills.length}</button>
+    ${['must','nice','rare'].map(t=>{
+      const n = (DATA.tiers?.[t]||[]).length;
+      return `<button data-tier="${t}" class="${TIER===t?'on':''}">${TIER_LABEL[t][0]} ${n}</button>`;
+    }).join('')}
+  </div>`;
+
+  if(TIER !== 'all') html += `<div class="tier-note">${TIER_LABEL[TIER][1]}</div>`;
+
+  if(!list.length){
+    html += `<div class="empty">没有匹配的技能。</div>`;
+  } else {
+    html += list.map(s => {
+      const t = tierOf(s.id), p = Math.round((s.coverage||0)*100);
+      const has = HAVE.has(s.id);
+      const open = false;
+      return `<div class="skill ${t}${has?' have':''}" data-id="${esc(s.id)}">
+        <div class="head">
+          <span class="nm">${esc(s.name)}</span>
+          ${s.zh && s.zh!==s.name ? `<span class="zh">${esc(s.zh)}</span>`:''}
+          <span class="lv">${esc(s.level||'')}</span>
+          <span class="dom">${esc(s.domain_label||s.domain||'')}</span>
+          <span class="pct" style="color:${t==='must'?'var(--must)':t==='nice'?'var(--nice)':'var(--rare)'}">${p}%</span>
+        </div>
+        <div class="cbar"><i style="width:${p}%;background:${t==='must'?'var(--must)':t==='nice'?'var(--nice)':'var(--rare)'}"></i></div>
+        <div class="body">
+          ${s.what?`<h4>一句话</h4><p>${esc(s.what)}</p>`:''}
+          ${s.why?`<h4>为什么这个岗位要它</h4><p>${esc(s.why)}</p>`:''}
+          ${s.how?`<h4>展开说说</h4><p>${esc(s.how)}</p>`:''}
+          ${(s.prerequisite||[]).length?`<h4>前置技能</h4><div>${s.prerequisite.map(x=>`<span class="tag pre">${esc(x)}</span>`).join('')}</div>`:''}
+          ${(s.learn_path||[]).length?`<h4>怎么学</h4><ol>${s.learn_path.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}
+          ${(s.samples||[]).length?`<h4>JD 里是这么说的</h4>${s.samples.map(x=>`<blockquote>${esc(x)}</blockquote>`).join('')}`:''}
+          ${(s.jobs||[]).length?`<h4>出现在这些岗位</h4><div>${s.jobs.slice(0,8).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>`:''}
+          <div class="actions">
+            <button data-toggle="${esc(s.id)}">${has?'✓ 已掌握（点击取消）':'标记为已掌握'}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  $('#app').innerHTML = html;
+
+  document.querySelectorAll('.head').forEach(h => h.onclick = e => {
+    if(e.target.closest('button')) return;
+    h.parentElement.classList.toggle('open');
+  });
+  document.querySelectorAll('[data-toggle]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const id = b.dataset.toggle;
+    HAVE.has(id) ? HAVE.delete(id) : HAVE.add(id);
+    saveHave(); render();
+  });
+  document.querySelectorAll('[data-tier]').forEach(b => b.onclick = () => {
+    TIER = b.dataset.tier; render();
+  });
+}
+
+$('#q').oninput = e => { Q = e.target.value.trim().toLowerCase(); render(); };
+$('#btnGap').onclick = () => {
+  GAPONLY = !GAPONLY;
+  $('#btnGap').classList.toggle('on', GAPONLY);
+  $('#btnGap').textContent = GAPONLY ? '显示全部' : '只看缺口';
+  render();
+};
+
+(async () => {
+  DATA = await api('/api/atlas');
+  if(DATA && !DATA.empty && (DATA.have||[]).length) DATA.have.forEach(x=>HAVE.add(x));
+  render();
+})();
+</script>
+</body>
+</html>

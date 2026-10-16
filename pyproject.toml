@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jd-skill-atlas"
+version = "0.1.0"
+description = "Turn a pile of job descriptions into a ranked skill map — and explain every term. Extracts required capabilities from JDs, groups them into must-have / nice-to-have / differentiator, and builds an offline study platform with learning paths. No LLM required."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "WEIWEI0614"}]
+keywords = ["job-description", "skill-gap", "learning-path", "career", "glossary", "jd", "resume", "learning"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = ["PyYAML>=5.4"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+atlas = "atlas.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/WEIWEI0614/jd-skill-atlas"
+Issues = "https://github.com/WEIWEI0614/jd-skill-atlas/issues"
+
+[tool.setuptools]
+packages = ["atlas", "atlas.ui"]
+
+[tool.setuptools.package-data]
+"atlas" = ["data/skills/*.yaml"]
+"atlas.ui" = ["static/*.html"]
