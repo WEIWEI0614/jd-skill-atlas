@@ -13,7 +13,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from atlas.core import DOMAIN_LABELS, JD, Skill, load_skills   # noqa: E402
+from atlas.core import DOMAIN_LABELS, JD, Skill, load_skills, render_md   # noqa: E402
 from atlas.extract import build_learning_path, extract          # noqa: E402
 
 # 三个分组：这一批就是「隐形知识」的全部范围
@@ -55,9 +55,9 @@ def card(s: Skill, count: int, total: int, color: str, open_it: bool) -> str:
 <span class="cov" style="color:{color}">{'未出现' if count == 0 else f'{cov:.1%}'}</span>
 <span class="cnt">{count}/{total} 个岗位</span></summary>
 <div class="body">
-<div class="field"><span class="k">一句话</span><span class="v">{html.escape(s.what)}</span></div>
-<div class="field"><span class="k">为什么岗位要它</span><span class="v md">{html.escape(s.why).replace(chr(10), '<br>')}</span></div>
-<div class="field"><span class="k">展开说说</span><span class="v md">{html.escape(s.how).replace(chr(10), '<br>')}</span></div>
+<div class="field"><span class="k">一句话</span><span class="v">{render_md(s.what)}</span></div>
+<div class="field"><span class="k">为什么岗位要它</span><span class="v md">{render_md(s.why)}</span></div>
+<div class="field"><span class="k">展开说说</span><span class="v md">{render_md(s.how)}</span></div>
 {prereq}
 {('<div class="field"><span class="k">怎么学</span><span class="v"><ol class="lp">' + learn + '</ol></span></div>') if learn else ''}
 </div></details>"""

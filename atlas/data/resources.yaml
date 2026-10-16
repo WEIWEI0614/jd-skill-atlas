@@ -1,0 +1,373 @@
+# 学习资源映射（skill id → 公开资源）
+# ---------------------------------------------------------------------------
+# 与 skills/*.yaml 解耦：改资源不动词典，改词典不动资源。
+# 所有 URL 均以 curl 逐个验证过状态码；个别站点（OpenCV docs / Linux Foundation
+# wiki）对自动请求返回 403，但浏览器访问正常，已在 label 中注明。
+#
+# kind 取值：course 课程/教材 · docs 官方文档 · repo 开源仓库 ·
+#            paper 论文 · wiki 词条/速查 · tool 工具/项目
+# ---------------------------------------------------------------------------
+
+note: 每个技能对应的公开学习资源。所有 URL 均已逐个验证 HTTP 状态码。
+kinds:
+  course: 课程 / 教材
+  docs: 官方文档
+  repo: 开源仓库
+  paper: 论文
+  wiki: 词条 / 速查
+  tool: 工具 / 项目
+resources:
+  zmp:
+  - url: https://underactuated.csail.mit.edu/
+    label: MIT 6.832 欠驱动机器人 · Tedrake（全免费，含 Drake notebook）
+    kind: course
+  - url: https://hades.mech.northwestern.edu/index.php/Modern_Robotics
+    label: Modern Robotics 官方主页 · Lynch & Park（预印本免费）
+    kind: course
+  - url: https://en.wikipedia.org/wiki/Zero_moment_point
+    label: ZMP 定义与推导
+    kind: wiki
+  - url: https://drake.mit.edu/
+    label: Drake 官方文档（含双足与接触的教程）
+    kind: docs
+  lipm:
+  - url: https://underactuated.csail.mit.edu/simple_legs.html
+    label: 欠驱动教材 · 简化腿模型一章（LIPM 的推导起点）
+    kind: course
+  - url: https://github.com/RussTedrake/underactuated
+    label: 教材全部代码与 notebook（可直接跑）
+    kind: repo
+  - url: https://drake.mit.edu/
+    label: Drake 官方文档
+    kind: docs
+  wbc:
+  - url: https://underactuated.csail.mit.edu/humanoids.html
+    label: 欠驱动教材 · 人形机器人一章（全身控制与任务优先级）
+    kind: course
+  - url: https://github.com/stack-of-tasks/pinocchio
+    label: Pinocchio · 刚体动力学库（WBC 的数值底座）
+    kind: repo
+  - url: https://github.com/RussTedrake/underactuated
+    label: 教材代码
+    kind: repo
+  contact-dynamics:
+  - url: https://mujoco.readthedocs.io/en/stable/
+    label: MuJoCo 官方文档（接触模型参数的权威说明）
+    kind: docs
+  - url: https://github.com/google-deepmind/mujoco
+    label: MuJoCo 开源仓库
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Contact_mechanics
+    label: 接触力学基础
+    kind: wiki
+  - url: https://github.com/stack-of-tasks/pinocchio
+    label: Pinocchio · 含接触力学的刚体库
+    kind: repo
+  actuator-control:
+  - url: https://simplefoc.com/
+    label: SimpleFOC · 开源 FOC 项目官网（最快跑通三环的路径）
+    kind: tool
+  - url: https://docs.odriverobotics.com/
+    label: ODrive 官方文档（工程级 FOC 与力矩控制）
+    kind: docs
+  - url: https://github.com/simplefoc/Arduino-FOC
+    label: SimpleFOC 源码（含坐标变换实现）
+    kind: repo
+  calibration:
+  - url: https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html
+    label: OpenCV 相机标定官方教程（该站屏蔽自动请求，浏览器可正常打开）
+    kind: docs
+  - url: https://github.com/ethz-asl/kalibr
+    label: Kalibr · 多相机 + IMU 联合标定的工业级工具
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Camera_resectioning
+    label: 相机标定的数学框架（PnP 问题）
+    kind: wiki
+  state-estimation:
+  - url: https://www.kalmanfilter.net/
+    label: 卡尔曼滤波交互式教程（从 1D 讲到 EKF）
+    kind: course
+  - url: https://github.com/HKUST-Aerial-Robotics/VINS-Mono
+    label: VINS-Mono · 视觉惯性里程计经典实现
+    kind: repo
+  - url: https://github.com/rpng/open_vins
+    label: OpenVINS · 教学友好的 VIO 代码库
+    kind: repo
+  - url: https://github.com/ethz-asl/maplab
+    label: maplab · 多传感器建图与定位
+    kind: repo
+  retargeting:
+  - url: https://github.com/YanjieZe/GMR
+    label: General Motion Retargeting（人体动作 → 机器人的开源实现）
+    kind: repo
+  - url: https://github.com/LeCAR-Lab/human2humanoid
+    label: Human2Humanoid · 人体动作迁移到人形机器人
+    kind: repo
+  data-flywheel:
+  - url: https://github.com/huggingface/lerobot
+    label: LeRobot · 采集 / 训练 / 部署的开源全链路（含 SO-101 机械臂）
+    kind: repo
+  - url: https://robotics-transformer-x.github.io/
+    label: Open X-Embodiment · 跨本体数据集与标准
+    kind: paper
+  - url: https://github.com/Physical-Intelligence/openpi
+    label: openpi · π0 开源实现（后训练数据流程可参考）
+    kind: repo
+  - url: https://huggingface.co/docs/lerobot/index
+    label: LeRobot 官方文档
+    kind: docs
+  loco-manipulation:
+  - url: https://github.com/LeCAR-Lab/human2humanoid
+    label: 全身协调（走 + 操作）的开源实现
+    kind: repo
+  - url: https://github.com/google-deepmind/mujoco_menagerie
+    label: MuJoCo Menagerie · 现成的高质量机器人模型
+    kind: repo
+  - url: https://github.com/google-deepmind/mujoco
+    label: MuJoCo 引擎
+    kind: repo
+  realtime-scheduling:
+  - url: https://wiki.linuxfoundation.org/realtime/start
+    label: Linux 实时内核官方 Wiki（该站屏蔽自动请求，浏览器可打开）
+    kind: docs
+  - url: https://docs.ros.org/en/iron/Tutorials/Advanced/Real-time-programming.html
+    label: ROS 2 实时编程官方教程
+    kind: docs
+  - url: https://en.wikipedia.org/wiki/Real-time_computing
+    label: 实时计算的确定性含义
+    kind: wiki
+  onboard-compute:
+  - url: https://developer.nvidia.com/embedded/jetpack
+    label: NVIDIA JetPack / Jetson 端侧部署套件
+    kind: tool
+  - url: https://docs.nvidia.com/deeplearning/tensorrt/
+    label: TensorRT 官方文档（算子融合与量化部署）
+    kind: docs
+  force-tactile-fusion:
+  - url: https://github.com/facebookresearch/tacto
+    label: Tacto · 触觉仿真（视觉 + 触觉融合研究常用）
+    kind: repo
+  - url: https://github.com/facebookresearch/digit-design
+    label: DIGIT · 开源光学触觉传感器（含硬件设计）
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Tactile_sensor
+    label: 触觉传感器原理
+    kind: wiki
+  dual-system-arch:
+  - url: https://www.figure.ai/news/helix
+    label: Figure Helix · 商用双系统架构的公开说明
+    kind: docs
+  - url: https://www.physicalintelligence.company/blog/pi0
+    label: Physical Intelligence π0 · 分层策略的公开技术说明
+    kind: docs
+  - url: https://github.com/Physical-Intelligence/openpi
+    label: openpi · π0 开源实现
+    kind: repo
+  robot-lifecycle:
+  - url: https://en.wikipedia.org/wiki/Reliability_engineering
+    label: 可靠性工程（串联系统、浴盆曲线）
+    kind: wiki
+  - url: https://en.wikipedia.org/wiki/Failure_rate
+    label: 失效率与 MTBF 的定义
+    kind: wiki
+  - url: https://www.aiag.org/
+    label: AIAG · 汽车行业质量标准发布方（IATF 16949 相关）
+    kind: tool
+  kv-cache:
+  - url: https://docs.vllm.ai/en/latest/
+    label: vLLM 官方文档（KV Cache 管理的工程实现）
+    kind: docs
+  - url: https://arxiv.org/abs/2405.04434
+    label: DeepSeek-V2 论文 · MLA 把 KV 压到低秩潜空间
+    kind: paper
+  - url: https://github.com/vllm-project/vllm
+    label: vLLM 源码（含 block_manager）
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Transformer_(deep_learning_architecture)
+    label: Transformer 架构基础
+    kind: wiki
+  paged-attention:
+  - url: https://arxiv.org/abs/2309.06180
+    label: PagedAttention 原论文（vLLM）
+    kind: paper
+  - url: https://blog.vllm.ai/2023/06/20/vllm.html
+    label: vLLM 官方博客 · 分页显存的原理解释
+    kind: docs
+  - url: https://docs.vllm.ai/en/latest/
+    label: vLLM 官方文档
+    kind: docs
+  continuous-batching:
+  - url: https://www.anyscale.com/blog/continuous-batching-llm-inference
+    label: 连续批处理的经典解释（Ray/Anyscale）
+    kind: docs
+  - url: https://docs.vllm.ai/en/latest/
+    label: vLLM 调度器与批处理实现
+    kind: docs
+  pd-disaggregation:
+  - url: https://docs.vllm.ai/en/latest/features/disagg_prefill.html
+    label: vLLM 官方 · 预填充/解码分离部署文档
+    kind: docs
+  - url: https://github.com/vllm-project/vllm
+    label: vLLM 源码
+    kind: repo
+  speculative-decoding:
+  - url: https://docs.vllm.ai/en/latest/features/spec_decode.html
+    label: vLLM 官方 · 投机解码配置与说明
+    kind: docs
+  - url: https://arxiv.org/abs/2211.17192
+    label: 投机解码原论文 · Fast Inference from Transformers
+    kind: paper
+  quantization:
+  - url: https://arxiv.org/abs/2210.17323
+    label: GPTQ 论文 · 二阶误差补偿的逐层量化
+    kind: paper
+  - url: https://arxiv.org/abs/2306.00978
+    label: AWQ 论文 · 激活感知的权重量化
+    kind: paper
+  - url: https://github.com/vllm-project/llm-compressor
+    label: llm-compressor · 生产级量化工具（含 FP8 / INT4）
+    kind: repo
+  parallelism:
+  - url: https://github.com/NVIDIA/Megatron-LM
+    label: Megatron-LM · TP/PP 的参考实现
+    kind: repo
+  - url: https://www.deepspeed.ai/tutorials/zero/
+    label: DeepSpeed ZeRO 官方教程（三阶段分片）
+    kind: docs
+  - url: https://huggingface.co/spaces/nanotron/ultrascale-playbook
+    label: Ultra-Scale Playbook · 并行策略决策树（强烈推荐）
+    kind: course
+  collective-comm:
+  - url: https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/index.html
+    label: NCCL 官方文档（含各原语的语义）
+    kind: docs
+  - url: https://github.com/NVIDIA/nccl-tests
+    label: nccl-tests · 实测集合通信带宽的标准工具
+    kind: repo
+  prefix-caching:
+  - url: https://docs.sglang.ai/
+    label: SGLang 官方文档（RadixAttention 的原产地）
+    kind: docs
+  - url: https://github.com/sgl-project/sglang
+    label: SGLang 源码
+    kind: repo
+  - url: https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html
+    label: vLLM 的自动前缀缓存
+    kind: docs
+  serving-metrics:
+  - url: https://docs.vllm.ai/en/latest/
+    label: vLLM 文档（性能指标与压测方法）
+    kind: docs
+  - url: https://github.com/vllm-project/vllm/tree/main/benchmarks
+    label: vLLM 官方压测脚本（照它扫四维就对了）
+    kind: repo
+  long-context:
+  - url: https://arxiv.org/abs/2309.00071
+    label: YaRN · 位置编码外推的代表方法
+    kind: paper
+  - url: https://github.com/huggingface/transformers
+    label: Transformers 源码（各注意力实现都在这里）
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Attention_(machine_learning)
+    label: 注意力机制基础
+    kind: wiki
+  mixed-precision:
+  - url: https://pytorch.org/docs/stable/notes/amp_examples.html
+    label: PyTorch AMP 官方示例（混合精度实践）
+    kind: docs
+  - url: https://github.com/Dao-AILab/flash-attention
+    label: FlashAttention · online softmax 解决数值溢出
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/Mixed-precision_arithmetic
+    label: 混合精度算术（bf16 与 fp16 的范围差异）
+    kind: wiki
+  moe:
+  - url: https://huggingface.co/blog/moe
+    label: Hugging Face · MoE 架构图解
+    kind: docs
+  - url: https://arxiv.org/abs/2412.19437
+    label: DeepSeek-V3 论文 · 工程细节最全的 MoE 报告
+    kind: paper
+  - url: https://github.com/deepseek-ai/DeepEP
+    label: DeepEP · MoE 专家并行的通信库
+    kind: repo
+  mcp:
+  - url: https://modelcontextprotocol.io/
+    label: MCP 官方规范与文档
+    kind: docs
+  - url: https://github.com/modelcontextprotocol/servers
+    label: 官方与社区 MCP 服务端集合（可直接读实现）
+    kind: repo
+  llm-app-platform:
+  - url: https://docs.dify.ai/
+    label: Dify 官方文档
+    kind: docs
+  - url: https://github.com/langgenius/dify
+    label: Dify 开源仓库
+    kind: repo
+  dds:
+  - url: https://docs.ros.org/en/iron/Concepts/Intermediate/About-Quality-of-Service-Settings.html
+    label: ROS 2 QoS 官方说明（配错就会「看不到数据」）
+    kind: docs
+  - url: https://fast-dds.docs.eprosima.com/en/latest/
+    label: Fast DDS 官方文档（ROS 2 默认实现之一）
+    kind: docs
+  umi:
+  - url: https://github.com/real-stanford/universal_manipulation_interface
+    label: UMI 官方仓库（含硬件设计与采集流程）
+    kind: repo
+  - url: https://umi-gripper.github.io/
+    label: UMI 项目主页（含论文与视频）
+    kind: paper
+  hardware-bus:
+  - url: https://learn.sparkfun.com/tutorials/serial-peripheral-interface-spi/all
+    label: SPI 入门教程（含 CPOL/CPHA 时序）
+    kind: course
+  - url: https://learn.sparkfun.com/tutorials/i2c/all
+    label: I2C 入门教程（含地址冲突与上拉电阻）
+    kind: course
+  auto-quality-tools:
+  - url: https://en.wikipedia.org/wiki/Advanced_product_quality_planning
+    label: APQP · 产品先期质量策划
+    kind: wiki
+  - url: https://en.wikipedia.org/wiki/Production_part_approval_process
+    label: PPAP · 生产件批准程序
+    kind: wiki
+  - url: https://en.wikipedia.org/wiki/Statistical_process_control
+    label: SPC · 统计过程控制与控制图
+    kind: wiki
+  - url: https://www.aiag.org/
+    label: AIAG · 五大工具的发布方（可下载标准目录）
+    kind: tool
+  npi:
+  - url: https://en.wikipedia.org/wiki/New_product_development
+    label: 新产品开发流程概览（EVT/DVT/PVT 的上位框架）
+    kind: wiki
+  emc:
+  - url: https://en.wikipedia.org/wiki/Electromagnetic_compatibility
+    label: 电磁兼容 · EMI/EMS、屏蔽、接地、滤波
+    kind: wiki
+  checkpoint-resilience:
+  - url: https://pytorch.org/docs/stable/checkpoint.html
+    label: PyTorch 激活重计算（gradient checkpointing）
+    kind: docs
+  - url: https://docs.pytorch.org/docs/stable/distributed.checkpoint.html
+    label: PyTorch 分布式检查点（大模型存盘的官方方案）
+    kind: docs
+  hf-ecosystem:
+  - url: https://huggingface.co/docs
+    label: Hugging Face 官方文档总入口
+    kind: docs
+  - url: https://huggingface.co/docs/transformers/index
+    label: Transformers 文档
+    kind: docs
+  - url: https://github.com/huggingface/lerobot
+    label: LeRobot（机器人方向的开源生态）
+    kind: repo
+  hmi:
+  - url: https://github.com/ros2/rviz
+    label: RViz · ROS 2 官方可视化与调试界面
+    kind: repo
+  - url: https://en.wikipedia.org/wiki/User_interface_design
+    label: 界面设计基础（含实时性与安全交互原则）
+    kind: wiki

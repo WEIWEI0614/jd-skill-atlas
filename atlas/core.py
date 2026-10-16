@@ -182,6 +182,54 @@ def list_skill_files() -> list[dict]:
     return sorted(out, key=lambda x: x["domain"])
 
 
+def render_md(text: str) -> str:
+    """把词典里的轻量标记安全地渲染成 HTML。
+
+    词典的 what/why/how 里用了 `**加粗**` 和换行 —— 直接 html.escape 会把
+    `**` 变成字面量显示出来。这里按固定顺序处理：
+      1. 先转义 HTML（防注入）
+      2. `**x**` → `<b>x</b>`
+      3. 连续空行 → 段落间隔；单换行 → `<br>`
+      4. 行首缩进（两个空格以上）→ 用 &nbsp; 保留层级
+    """
+    import html as _html
+    import re as _re
+
+    esc = _html.escape(text or "")
+    esc = _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", esc, flags=_re.S)
+    lines = esc.split("\n")
+    out = []
+    for ln in lines:
+        if ln.strip() == "":
+            out.append("<br>")
+            continue
+        m = _re.match(r"^(\s+)", ln)
+        if m:
+            depth = len(m.group(1)) // 2
+            ln = "&nbsp;" * (2 * min(depth, 4)) + ln.lstrip()
+        out.append(ln)
+    joined = "<br>".join(out)
+    return _re.sub(r"(?:<br>){3,}", "<br><br>", joined)
+
+
+def load_resources() -> dict[str, list[dict]]:
+    """加载 skill id → 公开学习资源的映射。
+
+    与 skills/*.yaml 解耦：改资源不动词典。用户目录同名文件可整体覆盖内置版。
+    返回 {skill_id: [{url, label, kind}, ...]}
+    """
+    merged: dict[str, list[dict]] = {}
+    for d in (BUILTIN_SKILLS_DIR, HOME / "data"):
+        p = d.parent / "resources.yaml" if d == BUILTIN_SKILLS_DIR else d / "resources.yaml"
+        if not p.exists():
+            continue
+        data = load_yaml(p).get("resources") or {}
+        for sid, items in data.items():
+            if isinstance(items, list):
+                merged[sid] = [dict(x) for x in items if isinstance(x, dict) and x.get("url")]
+    return merged
+
+
 # ---------------------------------------------------------------------------
 #  JD
 # ---------------------------------------------------------------------------

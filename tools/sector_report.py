@@ -15,7 +15,7 @@ from collections import Counter
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from atlas.core import DOMAIN_LABELS, JD, Atlas, load_skills   # noqa: E402
+from atlas.core import DOMAIN_LABELS, JD, Atlas, load_skills, render_md   # noqa: E402
 from atlas.extract import build_learning_path, extract         # noqa: E402
 
 ROBOT_SIGNALS = re.compile(
@@ -97,9 +97,9 @@ def skill_card(hit, total: int, color: str, rank: int) -> str:
 <span class="cov" style="color:{color}">{cov:.1%}</span>
 <span class="cnt">{hit.count}/{total} 个岗位提到</span></summary>
 <div class="body">
-<div class="field"><span class="k">一句话</span><span class="v">{html.escape(s.what)}</span></div>
-<div class="field"><span class="k">为什么岗位要它</span><span class="v md">{html.escape(s.why).replace(chr(10), '<br>')}</span></div>
-<div class="field"><span class="k">展开说说</span><span class="v md">{html.escape(s.how).replace(chr(10), '<br>')}</span></div>
+<div class="field"><span class="k">一句话</span><span class="v">{render_md(s.what)}</span></div>
+<div class="field"><span class="k">为什么岗位要它</span><span class="v md">{render_md(s.why)}</span></div>
+<div class="field"><span class="k">展开说说</span><span class="v md">{render_md(s.how)}</span></div>
 {prereq}
 {('<div class="field"><span class="k">怎么学</span><span class="v"><ol class="lp">' + learn + '</ol></span></div>') if learn else ''}
 {('<div class="field"><span class="k">JD 原话</span><span class="v">' + samples + '</span></div>') if samples else ''}
