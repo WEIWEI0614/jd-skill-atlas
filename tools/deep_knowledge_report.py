@@ -30,7 +30,7 @@ GROUPS = [
 BANDS = [
     (0.0, 0.0, "🕳 完全隐形", "在全部 JD 里一次都没出现 —— 只能靠主动学，没有任何岗位会提醒你", "#f85149"),
     (0.0, 0.02, "🌑 极低可见", "不到 2% 的岗位提到。通常是资深岗才会写出来", "#d29922"),
-    (0.02, 0.05, "🌘 少量可见", "2%–5%。写出来的岗位基本是这个方向的核心岗", "#a371f7"),
+    (0.02, 0.05, "🌘 少量可见", "2%–5%。写出来的岗位基本是这个方向的核心岗", "#58a6ff"),
     (0.05, 1.01, "🌗 相对常见", "5% 以上。说明已经是该赛道的事实要求", "#3fb950"),
 ]
 
@@ -149,8 +149,16 @@ td,th{padding:9px 12px;border-bottom:1px solid #21262d;text-align:left}
 th{color:#8b949e;font-weight:500;font-size:12px}
 tr:last-child td{border-bottom:none}
 .pct{text-align:right;font-variant-numeric:tabular-nums;width:74px}
-.bar{height:7px;background:#21262d;border-radius:4px;overflow:hidden;margin-top:2px}
+.bar{height:10px;background:#1a1c21;border:1px solid #2b2e35;
+border-radius:5px;overflow:hidden;margin-top:2px}
 .bar i{display:block;height:100%;border-radius:4px}
+/* 0% 表示「没有」而不是「很短」。用淡红底的空槽 —— 零值的标准画法。
+刻意不用斜纹满格：那会比 0.3% 的短条更「重」，把零值误读成高值。 */
+.bar.zero{background:rgba(226,109,107,.07);border-color:rgba(226,109,107,.45)}
+.lg{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;font-size:11.5px;color:#7d8590}
+.lg span{display:inline-flex;align-items:center;gap:5px}
+.lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.lg .zero{background:rgba(226,109,107,.07);border:1px solid rgba(226,109,107,.45)}
 details.skill{background:var(--panel);border:1px solid var(--line);
 border-radius:10px;margin:8px 0;overflow:hidden}
 details.skill>summary{cursor:pointer;padding:13px 16px;display:flex;
@@ -206,17 +214,31 @@ color:var(--dim);font-size:12px}
     GN = {"robotics-advanced": "机器人进阶", "ai-infra-deep": "AI Infra", "ecosystem": "生态流程"}
     SORTED = [(i, cov.get(i, 0) / total) for i in all_ids]
     SORTED.sort(key=lambda x: x[1])
+    maxc = max((c for _, c in SORTED), default=0) or 1
     for sid, c in SORTED:
         s = skills[sid]
         _, _, color = band_of(c)
         grp = next((GN[g] for g, ids in MEMBERS.items() if sid in ids), "")
-        pct = "未出现" if c == 0 else f"{c:.1%}"
-        w = min(c * 100 / 12 * 100, 100)
+        if c == 0:
+            pct, cell = "未出现", '<div class="bar zero"></div>'
+        else:
+            pct = f"{c:.1%}"
+            # 平方根刻度：值全部挤在 0–12%，线性刻度下低值区间看不出差别。
+            w = max((c / maxc) ** 0.5 * 100, 7)
+            cell = f'<div class="bar"><i style="width:{w:.1f}%;background:{color}"></i></div>'
         A(f'<tr><td>{html.escape(s.display)}</td><td style="color:#8b949e">{grp}</td>'
           f'<td style="color:#7d8590;font-size:12.5px">{html.escape(s.level)}</td>'
-          f'<td><div class="bar"><i style="width:{w:.1f}%;background:{color}"></i></div></td>'
+          f'<td>{cell}</td>'
           f'<td class="pct" style="color:{color}">{pct}</td></tr>')
     A("</tbody></table>")
+    b2, b3, b4 = band_of(0.01)[2], band_of(0.03)[2], band_of(0.06)[2]
+    A('<div class="lg">'
+      '<span><i class="zero"></i>未出现（JD 里一次都没有）</span>'
+      f'<span><i style="background:{b2}"></i>&lt;2% 极低可见</span>'
+      f'<span><i style="background:{b3}"></i>2–5% 少量可见</span>'
+      f'<span><i style="background:{b4}"></i>≥5% 相对常见</span>'
+      f'<span>条形按平方根缩放（满格 = 本表最高 {maxc:.1%}），'
+      '只为拉开低值差异，精确数值看右侧</span></div>')
 
     for gid, title, color, blurb in GROUPS:
         A(f'<h2 style="border-color:{color}">二、{html.escape(title)}</h2>')

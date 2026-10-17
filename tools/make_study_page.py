@@ -74,8 +74,16 @@ tr:last-child td{border-bottom:none}
 .grp{color:var(--tx3);font-size:11.5px}
 .lvl{display:inline-block;font-size:10.5px;color:var(--tx3);border:1px solid var(--line);
  border-radius:4px;padding:0 5px;margin-left:6px}
-.covbar{height:6px;background:#21262d;border-radius:3px;overflow:hidden;min-width:70px}
-.covbar i{display:block;height:100%;border-radius:3px}
+.covbar{height:10px;background:#1a1c21;border:1px solid #2b2e35;border-radius:5px;
+ overflow:hidden;min-width:96px}
+.covbar i{display:block;height:100%;border-radius:4px}
+/* 0% 表示「没有」而不是「很短」。用淡红底的空槽 —— 零值的标准画法。
+   刻意不用斜纹满格：那会比 0.3% 的短条更「重」，把零值误读成高值。 */
+.covbar.zero{background:rgba(226,109,107,.07);border-color:rgba(226,109,107,.45)}
+.lg{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;font-size:11.5px;color:var(--tx3)}
+.lg span{display:inline-flex;align-items:center;gap:5px}
+.lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.lg .zero{background:rgba(226,109,107,.07);border:1px solid rgba(226,109,107,.45)}
 .pct{text-align:right;font-variant-numeric:tabular-nums;width:62px;font-size:12.5px}
 .hide{color:var(--red);font-weight:600;font-size:12.5px}
 details.k{background:var(--panel);border:1px solid var(--line);border-radius:11px;
@@ -209,24 +217,37 @@ def main() -> int:
     # ---- 一、按可见度分档 ----
     A("<h2>一、按可见度分档</h2>")
     A('<p class="gd">可见度越低，越说明它是「隐性门槛」而不是「招聘硬性条件」</p>')
-    A('<table class="bt"><thead><tr><th>知识点</th><th>所属</th><th style="width:130px">JD 可见度</th>'
+    A('<table class="bt"><thead><tr><th>知识点</th><th>所属</th><th style="width:150px">JD 可见度</th>'
       '<th class="pct">占比</th></tr></thead><tbody>')
     GN = {gid: title.split(" · ")[0] for gid, title, _, _ in GROUPS}
     rows = sorted(((i, cov.get(i, 0) / total) for i in all_ids), key=lambda x: x[1])
+    maxc = max((c for _, c in rows), default=0) or 1
     for sid, c in rows:
         s = skills[sid]
         grp = next((GN[g] for g, _, _, ids in GROUPS if sid in ids), "")
         if c == 0:
-            pct, color, w = "未出现", "#e26d6b", 1.2
+            pct, color = "未出现", "#e26d6b"
+            cell = '<div class="covbar zero"></div>'
         else:
-            pct, color = f"{c:.1%}", "#ef9f27" if c < 0.02 else ("#a99ce8" if c < 0.05 else "#5dcaa5")
-            w = min(c * 100 / 0.12 * 100, 100)
+            pct = f"{c:.1%}"
+            color = "#ef9f27" if c < 0.02 else ("#5b9ce0" if c < 0.05 else "#5dcaa5")
+            # 平方根刻度：本表的值全部挤在 0–12% 区间，线性刻度下 0.3% 与 2.9% 长度几乎相同。
+            # 开方后低值区间被拉开，条形才真正带信息。数据本身仍以右侧精确百分比为准。
+            w = max((c / maxc) ** 0.5 * 100, 7)
+            cell = f'<div class="covbar"><i style="width:{w:.1f}%;background:{color}"></i></div>'
         A(f'<tr><td data-label="知识点"><span class="tv">{html.escape(s.display)}</span>'
           f'<span class="lvl">{html.escape(s.level)}</span></td>'
           f'<td data-label="所属"><span class="grp">{html.escape(grp)}</span></td>'
-          f'<td data-label="可见度"><div class="covbar"><i style="width:{w:.1f}%;background:{color}"></i></div></td>'
+          f'<td data-label="可见度">{cell}</td>'
           f'<td class="pct" data-label="占比" style="color:{color}">{pct}</td></tr>')
     A("</tbody></table>")
+    A('<div class="lg">'
+      '<span><i class="zero"></i>未出现（JD 里一次都没有）</span>'
+      '<span><i style="background:#ef9f27"></i>&lt;2% 极低可见</span>'
+      '<span><i style="background:#5b9ce0"></i>2–5% 少量可见</span>'
+      '<span><i style="background:#5dcaa5"></i>≥5% 相对常见</span>'
+      f'<span style="color:var(--tx3)">条形按平方根缩放（满格 = 本表最高 {maxc:.1%}），'
+      '只为拉开低值差异，精确数值看右侧</span></div>')
 
     # ---- 二、三组详情 ----
     for gi, (gid, title, blurb, ids) in enumerate(GROUPS, 2):
