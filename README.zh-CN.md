@@ -14,6 +14,8 @@
 
 **配套使用 →** [`cn-job-radar`](https://github.com/WEIWEI0614/cn-job-radar) —— 盯企业官方招聘门户（飞书招聘 / Moka / 北森）自动抓岗位，产出本工具需要的那堆 JD。
 
+**在线演示 →** [weiwei0614.github.io/jd-skill-atlas](https://weiwei0614.github.io/jd-skill-atlas/) —— 用 355 条真实岗位生成的学习平台。
+
 </div>
 
 ---

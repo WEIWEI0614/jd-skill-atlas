@@ -14,6 +14,8 @@ must-have / nice-to-have / differentiator, and builds an offline study platform 
 
 **Pairs with →** [`cn-job-radar`](https://github.com/WEIWEI0614/cn-job-radar) — tracks companies' own ATS career portals (Feishu Hire / Moka / Beisen) and produces the JD pile this tool consumes.
 
+**Live demo →** [weiwei0614.github.io/jd-skill-atlas](https://weiwei0614.github.io/jd-skill-atlas/) — the generated study platform, built from 355 real job descriptions.
+
 </div>
 
 ---
